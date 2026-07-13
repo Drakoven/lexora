@@ -1,5 +1,7 @@
 # 📖 Lexora
 
+Construire le meilleur jeu de lettres moderne, sans jamais sacrifier le plaisir de jouer.
+
 > Entre dans l'arène des lettres.
 
 ---
