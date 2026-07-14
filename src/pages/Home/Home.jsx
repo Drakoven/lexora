@@ -1,14 +1,14 @@
+import "./Home.css";
 import Hero from "../../components/Hero/Hero.jsx";
 import Button from "../../components/Button/Button.jsx";
+import LoginLink from "../../components/LoginLink/LoginLink.jsx";
 
 function Home() {
   return (
-    <div>
+    <div className="home">
       <Hero />
       <Button text="JOUER" />
-      <Button text="SE CONNECTER" />
-      <Button text="CRÉER UN COMPTE" />
-      <Button text="REJOUER" />
+      <LoginLink />
     </div>
   );
 }
