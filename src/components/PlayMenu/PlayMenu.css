@@ -1,0 +1,28 @@
+.play-menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.play-menu {
+  width: min(100%, 380px);
+  padding: 32px;
+  border-radius: 16px;
+
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(124, 58, 237, 0.22),
+      transparent 45%
+    ),
+    var(--color-background-soft);
+
+  box-shadow:
+    0 10px 30px rgba(124, 58, 237, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.play-menu-title {
+  margin: 0 0 24px;
+  text-align: center;
+}
