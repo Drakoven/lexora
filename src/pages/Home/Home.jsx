@@ -4,6 +4,7 @@ import Button from "../../components/Button/Button.jsx";
 import LoginLink from "../../components/LoginLink/LoginLink.jsx";
 import { useState } from "react";
 import PlayMenu from "../../components/PlayMenu/PlayMenu.jsx";
+import Overlay from "../../components/Overlay/Overlay.jsx";
 
 function Home() {
   const [isPlayMenuOpen, setIsPlayMenuOpen] = useState(false);
@@ -19,7 +20,12 @@ function Home() {
 
       <LoginLink />
 
-      {isPlayMenuOpen && <PlayMenu />}
+      {isPlayMenuOpen && (
+        <>
+          <Overlay onClick={() => setIsPlayMenuOpen(false)} />
+          <PlayMenu />
+        </>
+      )}
     </div>
   );
 }

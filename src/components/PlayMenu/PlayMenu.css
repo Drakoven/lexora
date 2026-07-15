@@ -8,6 +8,14 @@
   width: min(100%, 380px);
   padding: 32px;
   border-radius: 16px;
+  position: fixed;
+  z-index: 20;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(380px, calc(100% - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
 
   background:
     radial-gradient(
@@ -25,4 +33,23 @@
 .play-menu-title {
   margin: 0 0 24px;
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  .play-menu {
+    padding: 24px 20px;
+    border-radius: 14px;
+  }
+
+  .play-menu-title {
+    font-size: 1.35rem;
+  }
+
+  .play-menu-buttons {
+    width: 100%;
+  }
+
+  .play-menu-buttons .button {
+    width: 100%;
+  }
 }
