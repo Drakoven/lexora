@@ -1,0 +1,38 @@
+.avatar-picker-title {
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.avatar-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+}
+
+.avatar-picker-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    font-size: 1.75rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: border-color .2s ease, transform .2s ease;
+}
+
+.avatar-picker-option:hover {
+    transform: translateY(-2px);
+}
+
+.avatar-picker-option.is-selected {
+    border-color: var(--color-primary);
+    background-color: rgba(124, 58, 237, 0.2);
+}
+
+@media (max-width: 480px) {
+  .avatar-picker-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
