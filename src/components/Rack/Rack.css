@@ -1,0 +1,44 @@
+.rack {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--color-background-soft);
+}
+
+.rack-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #d9c398, #c7ab74);
+  color: #2b2110;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rack-tile:hover {
+  transform: translateY(-2px);
+}
+
+.rack-tile.is-selected {
+  box-shadow: 0 0 0 3px var(--color-primary);
+  transform: translateY(-4px);
+}
+
+.rack-tile-value {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
