@@ -1,5 +1,16 @@
+import { useNavigate } from "react-router-dom";
+
+import "./Register.css";
+import RegisterForm from "../../components/RegisterForm/RegisterForm.jsx";
+
 function Register() {
-    return <h1>Inscription</h1>;
+  const navigate = useNavigate();
+
+  return (
+    <div className="register-page">
+      <RegisterForm onBack={() => navigate("/")} />
+    </div>
+  );
 }
 
 export default Register;

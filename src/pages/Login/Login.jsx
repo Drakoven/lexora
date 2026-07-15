@@ -1,5 +1,16 @@
+import { useNavigate } from "react-router-dom";
+
+import "./Login.css";
+import LoginForm from "../../components/LoginForm/LoginForm.jsx";
+
 function Login() {
-    return <h1>Connexion</h1>;
+  const navigate = useNavigate();
+
+  return (
+    <div className="login-page">
+      <LoginForm onBack={() => navigate("/")} />
+    </div>
+  );
 }
 
 export default Login;
