@@ -1,0 +1,60 @@
+.app-layout {
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  padding: 20px 32px;
+
+  background-color: var(--color-background-soft);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.app-logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+}
+
+.app-nav {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.app-nav-link {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.app-nav-link:hover {
+  color: var(--color-text);
+}
+
+.app-nav-link.is-active {
+  color: var(--color-primary);
+}
+
+.app-logout-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.app-logout-button:hover {
+  color: var(--color-error);
+}
+
+.app-content {
+  padding: 32px;
+}

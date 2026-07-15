@@ -1,0 +1,59 @@
+import { NavLink, useNavigate } from "react-router-dom";
+
+import "./AppLayout.css";
+import { useAuth } from "../../context/AuthContext.jsx";
+
+function AppLayout({ children }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    navigate("/");
+    await logout();
+  }
+
+  return (
+    <div className="app-layout">
+      <header className="app-header">
+        <NavLink to="/" className="app-logo">
+          LEXORA
+        </NavLink>
+
+        <nav className="app-nav">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              isActive ? "app-nav-link is-active" : "app-nav-link"
+            }
+          >
+            Tableau de bord
+          </NavLink>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              isActive ? "app-nav-link is-active" : "app-nav-link"
+            }
+          >
+            Profil
+          </NavLink>
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              isActive ? "app-nav-link is-active" : "app-nav-link"
+            }
+          >
+            Paramètres
+          </NavLink>
+
+          <button className="app-logout-button" onClick={handleLogout}>
+            Déconnexion
+          </button>
+        </nav>
+      </header>
+
+      <main className="app-content">{children}</main>
+    </div>
+  );
+}
+
+export default AppLayout;

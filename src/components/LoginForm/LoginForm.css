@@ -37,3 +37,8 @@
     font-weight: 600;
     color: var(--color-text-muted);
 }
+
+.login-form-error {
+    color: var(--color-error);
+    font-size: 0.9rem;
+}
