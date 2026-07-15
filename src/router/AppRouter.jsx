@@ -7,6 +7,8 @@ import Dashboard from "../pages/Dashboard/Dashboard";
 import Game from "../pages/Game/Game";
 import Profile from "../pages/Profile/Profile";
 import Settings from "../pages/Settings/Settings";
+import OnlineLobby from "../pages/OnlineLobby/OnlineLobby";
+import OnlineGame from "../pages/OnlineGame/OnlineGame";
 import RequireAuth from "../components/RequireAuth/RequireAuth";
 
 function AppRouter() {
@@ -24,7 +26,30 @@ function AppRouter() {
             </RequireAuth>
           }
         />
-        <Route path="/game" element={<Game />} />
+        <Route
+          path="/game"
+          element={
+            <RequireAuth>
+              <Game />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/play/online"
+          element={
+            <RequireAuth>
+              <OnlineLobby />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/play/online/:code"
+          element={
+            <RequireAuth>
+              <OnlineGame />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/profile"
           element={
