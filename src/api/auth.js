@@ -21,3 +21,17 @@ export function logout() {
 export function me() {
   return apiFetch("/api/auth/me");
 }
+
+export function forgotPassword(email) {
+  return apiFetch("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPassword(token, newPassword) {
+  return apiFetch("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
+}

@@ -78,6 +78,10 @@ function LoginForm({ onBack }) {
           disabled={isSubmitting}
         />
     </form>
+
+    <button type="button" className="forgot-password-link" onClick={() => navigate("/forgot-password")}>
+      Mot de passe oublié ?
+    </button>
     </section>
   );
 }

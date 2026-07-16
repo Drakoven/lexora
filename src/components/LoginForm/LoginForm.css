@@ -42,3 +42,19 @@
     color: var(--color-error);
     font-size: 0.9rem;
 }
+
+.forgot-password-link {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-top: 16px;
+    padding: 0;
+    text-align: left;
+    transition: color .2s ease;
+}
+
+.forgot-password-link:hover {
+    color: var(--color-primary);
+}
