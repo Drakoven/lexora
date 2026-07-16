@@ -1,0 +1,98 @@
+.friends-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 480px;
+}
+
+.friends-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 14px;
+  background-color: var(--color-background-soft);
+}
+
+.friends-card p {
+  margin: 0;
+}
+
+.friends-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.friends-card input {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.friends-error {
+  color: var(--color-error);
+  font-size: 0.9rem;
+}
+
+.friends-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.friends-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  font-size: 0.95rem;
+}
+
+.friends-row-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.friends-avatar {
+  font-size: 1.3rem;
+}
+
+.friends-row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.friends-row-actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.friends-action-accept {
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.friends-action-invite {
+  background-color: var(--color-primary);
+  color: var(--color-background);
+}
+
+.friends-action-decline {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+}
