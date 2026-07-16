@@ -15,6 +15,7 @@ CREATE TABLE games (
   status ENUM('waiting','playing','finished') NOT NULL DEFAULT 'waiting',
   turn_started_at DATETIME NULL,
   winner TINYINT NULL,
+  match_type ENUM('code','random') NOT NULL DEFAULT 'code',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (player1_id) REFERENCES users(id),
