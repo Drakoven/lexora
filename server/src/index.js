@@ -11,6 +11,9 @@ import authRoutes from "./routes/auth.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import gameRoutes from "./routes/game.routes.js";
 import gamesRoutes from "./routes/games.routes.js";
+import friendsRoutes from "./routes/friends.routes.js";
+import rankingRoutes from "./routes/ranking.routes.js";
+import badgesRoutes from "./routes/badges.routes.js";
 import { registerSocketHandlers } from "./realtime/socket.js";
 import { setIO } from "./realtime/io.js";
 
@@ -52,6 +55,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/games", gamesRoutes);
+app.use("/api/friends", friendsRoutes);
+app.use("/api/ranking", rankingRoutes);
+app.use("/api/badges", badgesRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

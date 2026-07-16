@@ -21,6 +21,15 @@ export async function joinGame(req, res) {
   res.json(result.game);
 }
 
+export async function inviteFriend(req, res) {
+  const friendUserId = Number(req.body.friendUserId);
+  if (!friendUserId) return res.status(400).json({ message: "Ami invalide." });
+
+  const result = await gamesService.inviteFriend(req.session.userId, friendUserId);
+  if (result.error) return res.status(400).json({ message: result.error });
+  res.status(201).json(result.game);
+}
+
 export async function findMatch(req, res) {
   const result = await gamesService.findOrCreateRandomMatch(req.session.userId);
   if (result.matched) notifyGameUpdated(result.game.code);
@@ -43,6 +52,12 @@ export async function getGame(req, res) {
   const result = await gamesService.getPersonalizedGame(req.params.code.toUpperCase(), req.session.userId);
   if (result.error) return res.status(404).json({ message: result.error });
   res.json(result.game);
+}
+
+export async function getMoves(req, res) {
+  const result = await gamesService.getMovesForGame(req.params.code.toUpperCase(), req.session.userId);
+  if (result.error) return res.status(404).json({ message: result.error });
+  res.json(result.moves);
 }
 
 export async function submitMove(req, res) {

@@ -1,5 +1,5 @@
-import pool from "../config/db.js";
 import { validateMove as runValidateMove } from "../game/scoring.js";
+import { recordGameResult } from "../stats/statsService.js";
 
 export function validateMove(req, res) {
   const { board, placements } = req.body;
@@ -13,20 +13,16 @@ export function validateMove(req, res) {
 }
 
 export async function recordResult(req, res) {
-  const { result } = req.body;
+  const { result, score } = req.body;
 
   if (result !== "win" && result !== "loss") {
     return res.status(400).json({ message: "Résultat invalide." });
   }
+  if (typeof score !== "number" || !Number.isFinite(score)) {
+    return res.status(400).json({ message: "Score invalide." });
+  }
 
-  await pool.query(
-    `UPDATE users SET
-       games_played = games_played + 1,
-       wins = wins + ?,
-       losses = losses + ?
-     WHERE id = ?`,
-    [result === "win" ? 1 : 0, result === "loss" ? 1 : 0, req.session.userId]
-  );
+  await recordGameResult(req.session.userId, result, score);
 
   res.status(204).end();
 }

@@ -22,6 +22,18 @@ function availableRackTiles(rack, placements) {
   return remaining.map((tile, i) => ({ ...tile, id: i }));
 }
 
+function describeMove(move, playerName) {
+  if (move.moveType === "place") {
+    return `${playerName} forme ${move.detail.words.join(", ")} pour ${move.score} points.`;
+  }
+  if (move.moveType === "exchange") {
+    return `${playerName} échange ${move.detail.tileCount} lettre(s).`;
+  }
+  return move.detail?.auto
+    ? `${playerName} n'a pas joué à temps, son tour a été passé.`
+    : `${playerName} passe son tour.`;
+}
+
 function formatRemaining(turnStartedAt, turnHours, now) {
   if (!turnStartedAt) return "";
   const deadline = new Date(turnStartedAt).getTime() + turnHours * 60 * 60 * 1000;
@@ -53,6 +65,8 @@ function OnlineGame() {
   const [error, setError] = useState("");
   const [reactionBubble, setReactionBubble] = useState(null);
   const [now, setNow] = useState(() => Date.now());
+  const [moves, setMoves] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);
@@ -68,6 +82,7 @@ function OnlineGame() {
         setSelectedTileId(null);
       })
       .catch((err) => setLoadError(err.message));
+    gamesApi.getMoves(code).then(setMoves).catch(() => {});
   }
 
   useEffect(() => {
@@ -168,6 +183,7 @@ function OnlineGame() {
             {game.players[0]?.username} : {game.scores[0]} pts — {game.players[1]?.username} : {game.scores[1]} pts
           </p>
           <p>{isDraw ? "Égalité !" : `${game.players[game.winner]?.username} remporte la partie !`}</p>
+          {renderHistory()}
           <Button text="Retour au tableau de bord" onClick={() => navigate("/dashboard")} />
         </div>
       </AppLayout>
@@ -267,6 +283,24 @@ function OnlineGame() {
     socket.emit("game:react", { code, emoji });
   }
 
+  function renderHistory() {
+    return (
+      <div className="online-game-history">
+        <button type="button" className="game-secondary-action" onClick={() => setShowHistory(!showHistory)}>
+          {showHistory ? "Masquer l'historique" : "Voir l'historique des coups"}
+        </button>
+        {showHistory && (
+          <ul className="online-game-history-list">
+            {moves.length === 0 && <li className="online-game-history-empty">Aucun coup joué pour l'instant.</li>}
+            {moves.map((move, i) => (
+              <li key={i}>{describeMove(move, game.players[move.playerIndex]?.username)}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="game-page">
@@ -347,6 +381,8 @@ function OnlineGame() {
             </button>
           ))}
         </div>
+
+        {renderHistory()}
 
         {pendingBlank && (
           <div className="blank-picker-overlay">

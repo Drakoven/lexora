@@ -9,6 +9,9 @@ import Profile from "../pages/Profile/Profile";
 import Settings from "../pages/Settings/Settings";
 import OnlineLobby from "../pages/OnlineLobby/OnlineLobby";
 import OnlineGame from "../pages/OnlineGame/OnlineGame";
+import Friends from "../pages/Friends/Friends";
+import Leaderboard from "../pages/Leaderboard/Leaderboard";
+import Badges from "../pages/Badges/Badges";
 import RequireAuth from "../components/RequireAuth/RequireAuth";
 
 function AppRouter() {
@@ -26,14 +29,7 @@ function AppRouter() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/game"
-          element={
-            <RequireAuth>
-              <Game />
-            </RequireAuth>
-          }
-        />
+        <Route path="/game" element={<Game />} />
         <Route
           path="/play/online"
           element={
@@ -47,6 +43,30 @@ function AppRouter() {
           element={
             <RequireAuth>
               <OnlineGame />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/friends"
+          element={
+            <RequireAuth>
+              <Friends />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <RequireAuth>
+              <Leaderboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/badges"
+          element={
+            <RequireAuth>
+              <Badges />
             </RequireAuth>
           }
         />

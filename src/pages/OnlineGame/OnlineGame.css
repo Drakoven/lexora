@@ -126,6 +126,37 @@
   cursor: not-allowed;
 }
 
+.online-game-history {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.online-game-history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.online-game-history-list li {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background-color: var(--color-background-soft);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.online-game-history-empty {
+  text-align: center;
+}
+
 .blank-picker-overlay {
   position: fixed;
   inset: 0;

@@ -6,7 +6,7 @@ const router = Router();
 
 const asyncHandler = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
-router.post("/validate-move", requireAuth, validateMove);
+router.post("/validate-move", validateMove);
 router.post("/record-result", requireAuth, asyncHandler(recordResult));
 
 export default router;

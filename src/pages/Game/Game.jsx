@@ -248,6 +248,7 @@ function endGame(state, playerWhoEmptiedRack) {
 function Game() {
   const { user } = useAuth();
   const [state, dispatch] = useReducer(reducer, undefined, initialState);
+  const [player1Input, setPlayer1Input] = useState("");
   const [player2Input, setPlayer2Input] = useState("");
   const [blankLetterChoice, setBlankLetterChoice] = useState("A");
 
@@ -260,7 +261,8 @@ function Game() {
   useEffect(() => {
     if (state.phase !== "finished") return;
     if (state.winnerIndex === null) return;
-    gameApi.recordResult(state.winnerIndex === 0 ? "win" : "loss").catch(() => {});
+    if (!user) return;
+    gameApi.recordResult(state.winnerIndex === 0 ? "win" : "loss", state.scores[0]).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.phase]);
 
@@ -274,11 +276,26 @@ function Game() {
   }
 
   if (state.phase === "setup") {
+    const player1Name = user?.username || player1Input;
+    const canStart = player1Name.trim() !== "" && player2Input.trim() !== "";
+
     return (
       <AppLayout>
         <div className="game-setup">
           <h1>Nouvelle partie</h1>
-          <p>{user?.username} affronte :</p>
+          {user ? (
+            <p>{user.username} affronte :</p>
+          ) : (
+            <>
+              <p>Partie en invité — aucun compte requis.</p>
+              <input
+                type="text"
+                placeholder="Nom du joueur 1"
+                value={player1Input}
+                onChange={(e) => setPlayer1Input(e.target.value)}
+              />
+            </>
+          )}
           <input
             type="text"
             placeholder="Nom du joueur 2"
@@ -287,8 +304,8 @@ function Game() {
           />
           <Button
             text="Commencer"
-            disabled={player2Input.trim() === ""}
-            onClick={() => dispatch({ type: "START_GAME", player1Name: user?.username, player2Name: player2Input })}
+            disabled={!canStart}
+            onClick={() => dispatch({ type: "START_GAME", player1Name, player2Name: player2Input })}
           />
         </div>
       </AppLayout>

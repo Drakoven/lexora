@@ -47,6 +47,22 @@ function OnlineLobby() {
     }
   }
 
+  async function handleOpenGame(game) {
+    if (game.kind !== "received-invite") {
+      navigate(`/play/online/${game.code}`);
+      return;
+    }
+    setError("");
+    setIsBusy(true);
+    try {
+      const joined = await gamesApi.joinGame(game.code);
+      navigate(`/play/online/${joined.code}`);
+    } catch (err) {
+      setError(err.message);
+      setIsBusy(false);
+    }
+  }
+
   async function handleJoin(e) {
     e.preventDefault();
     if (joinCode.trim() === "") return;
@@ -73,12 +89,22 @@ function OnlineLobby() {
             <ul className="online-lobby-games">
               {games.map((game) => (
                 <li key={game.code}>
-                  <button type="button" className="online-lobby-game-row" onClick={() => navigate(`/play/online/${game.code}`)}>
+                  <button
+                    type="button"
+                    className="online-lobby-game-row"
+                    disabled={isBusy}
+                    onClick={() => handleOpenGame(game)}
+                  >
                     <span>
-                      {game.opponent ? game.opponent.username : "En attente d'un adversaire"}
-                      {" — "}
-                      {STATUS_LABELS[game.status]}
+                      {game.kind === "received-invite"
+                        ? `${game.opponent?.username} t'invite à jouer`
+                        : game.kind === "sent-invite"
+                        ? `Invitation envoyée à ${game.invitedUser?.username}`
+                        : game.opponent
+                        ? `${game.opponent.username} — ${STATUS_LABELS[game.status]}`
+                        : `En attente d'un adversaire — ${STATUS_LABELS[game.status]}`}
                     </span>
+                    {game.kind === "received-invite" && <span className="online-lobby-your-turn">Rejoindre</span>}
                     {game.isYourTurn && <span className="online-lobby-your-turn">À toi de jouer</span>}
                   </button>
                 </li>
@@ -90,12 +116,13 @@ function OnlineLobby() {
         <section className="online-lobby-card">
           <h2>Adversaire aléatoire</h2>
           <p>On te trouve un adversaire disponible, ou tu attends qu'un autre joueur cherche aussi.</p>
+          <p className="online-lobby-ranked-note">Cette partie compte pour ton classement.</p>
           <Button text="Trouver une partie" disabled={isBusy} onClick={handleRandomMatch} />
         </section>
 
         <section className="online-lobby-card">
           <h2>Créer une salle</h2>
-          <p>Tu obtiens un code à partager avec ton adversaire.</p>
+          <p>Tu obtiens un code à partager avec ton adversaire. Partie amicale, sans impact sur ton classement.</p>
           <Button text="Créer une salle" disabled={isBusy} onClick={handleCreate} />
         </section>
 

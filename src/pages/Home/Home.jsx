@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import "./Home.css";
 import Hero from "../../components/Hero/Hero.jsx";
@@ -11,6 +12,7 @@ import LoginForm from "../../components/LoginForm/LoginForm.jsx";
 import RegisterForm from "../../components/RegisterForm/RegisterForm.jsx";
 
 function Home() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentModal, setCurrentModal] = useState("play");
 
@@ -34,8 +36,8 @@ function Home() {
 
           <Modal>
             {currentModal === "play" && (
-              <PlayMenu 
-                onGuest={() => setCurrentModal("guest")}
+              <PlayMenu
+                onGuest={() => navigate("/game")}
                 onLogin={() => setCurrentModal("login")}
                 onRegister={() => setCurrentModal("register")}
               />

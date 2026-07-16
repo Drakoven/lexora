@@ -7,9 +7,9 @@ export function validateMove(board, placements) {
   });
 }
 
-export function recordResult(result) {
+export function recordResult(result, score) {
   return apiFetch("/api/game/record-result", {
     method: "POST",
-    body: JSON.stringify({ result }),
+    body: JSON.stringify({ result, score }),
   });
 }

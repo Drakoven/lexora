@@ -11,6 +11,13 @@ export function joinGame(code) {
   });
 }
 
+export function inviteFriend(friendUserId) {
+  return apiFetch("/api/games/invite", {
+    method: "POST",
+    body: JSON.stringify({ friendUserId }),
+  });
+}
+
 export function findRandomMatch() {
   return apiFetch("/api/games/matchmaking", { method: "POST" });
 }
@@ -25,6 +32,10 @@ export function listGames() {
 
 export function getGame(code) {
   return apiFetch(`/api/games/${code}`);
+}
+
+export function getMoves(code) {
+  return apiFetch(`/api/games/${code}/moves`);
 }
 
 export function submitMove(code, placements) {

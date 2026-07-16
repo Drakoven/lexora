@@ -1,8 +1,10 @@
 import * as repo from "./gamesRepository.js";
+import * as friendsRepo from "../friends/friendsRepository.js";
 import { validateMove as runValidateMove } from "./scoring.js";
 import { createBag, drawTiles, RACK_SIZE, LETTER_VALUES } from "./letters.js";
 import { createEmptyBoard } from "./board.js";
-import pool from "../config/db.js";
+import { applyRankedResult } from "../ranking/rankingService.js";
+import { recordGameResult } from "../stats/statsService.js";
 
 export const TURN_HOURS = 48;
 const TURN_MS = TURN_HOURS * 60 * 60 * 1000;
@@ -45,13 +47,6 @@ function switchTurn(game) {
   game.turnStartedAt = new Date();
 }
 
-async function recordGameResult(userId, result) {
-  await pool.query(
-    "UPDATE users SET games_played = games_played + 1, wins = wins + ?, losses = losses + ? WHERE id = ?",
-    [result === "win" ? 1 : 0, result === "loss" ? 1 : 0, userId]
-  );
-}
-
 async function finishGame(game, playerIndexWhoEmptiedRack) {
   const rack1Value = rackValue(game.rack1);
   const rack2Value = rackValue(game.rack2);
@@ -73,8 +68,12 @@ async function finishGame(game, playerIndexWhoEmptiedRack) {
   const saved = await repo.saveGame(game);
 
   if (saved.winner !== null) {
-    await recordGameResult(saved.player1Id, saved.winner === 0 ? "win" : "loss");
-    await recordGameResult(saved.player2Id, saved.winner === 1 ? "win" : "loss");
+    await recordGameResult(saved.player1Id, saved.winner === 0 ? "win" : "loss", saved.score1);
+    await recordGameResult(saved.player2Id, saved.winner === 1 ? "win" : "loss", saved.score2);
+  }
+
+  if (saved.matchType === "random") {
+    await applyRankedResult(saved.player1Id, saved.player2Id, saved.winner);
   }
 
   return saved;
@@ -93,6 +92,7 @@ async function checkTurnExpiry(game) {
   ) {
     current.consecutivePasses += 1;
     iterations += 1;
+    await repo.recordMove(current.id, current.currentPlayer, "pass", { auto: true }, 0);
 
     if (current.consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
       current = await finishGame(current, null);
@@ -135,6 +135,7 @@ function personalize(game, userId) {
     ],
     winner: game.winner,
     matchType: game.matchType,
+    invitedUser: game.invitedUser,
   };
 }
 
@@ -153,7 +154,7 @@ async function startGame(game, joinerUserId) {
   return repo.saveGame(game);
 }
 
-export async function createGame(userId, matchType = "code") {
+export async function createGame(userId, matchType = "code", invitedUserId = null) {
   const game = await repo.createGame({
     player1Id: userId,
     player2Id: null,
@@ -169,8 +170,21 @@ export async function createGame(userId, matchType = "code") {
     turnStartedAt: null,
     winner: null,
     matchType,
+    invitedUserId,
   });
   return personalize(game, userId);
+}
+
+export async function inviteFriend(userId, friendUserId) {
+  if (friendUserId === userId) return { error: "Tu ne peux pas t'inviter toi-même." };
+
+  const friendship = await friendsRepo.findFriendship(userId, friendUserId);
+  if (!friendship || friendship.status !== "accepted") {
+    return { error: "Vous devez être amis pour vous inviter à jouer." };
+  }
+
+  const game = await createGame(userId, "friend", friendUserId);
+  return { game };
 }
 
 export async function joinGame(code, userId) {
@@ -178,6 +192,9 @@ export async function joinGame(code, userId) {
   if (!game) return { error: "Salle introuvable." };
   if (game.status !== "waiting") return { error: "Cette partie a déjà commencé." };
   if (game.player1Id === userId) return { error: "Tu ne peux pas rejoindre ta propre partie." };
+  if (game.invitedUserId && game.invitedUserId !== userId) {
+    return { error: "Cette partie est une invitation privée." };
+  }
 
   const saved = await startGame(game, userId);
   return { game: personalize(saved, userId) };
@@ -214,16 +231,34 @@ export async function getPersonalizedGame(code, userId) {
   return { game: personalize(game, userId) };
 }
 
+export async function getMovesForGame(code, userId) {
+  const game = await repo.getGameByCode(code);
+  if (!game) return { error: "Partie introuvable." };
+  if (game.player1Id !== userId && game.player2Id !== userId) return { error: "Tu ne fais pas partie de cette partie." };
+
+  const moves = await repo.getMovesForGame(game.id);
+  return { moves };
+}
+
 export async function listGamesForUser(userId) {
   const games = await repo.getGamesForUser(userId);
   return games.map((game) => {
     const isPlayer1 = game.player1Id === userId;
-    const opponent = isPlayer1 ? game.player2 : game.player1;
+    const isReceivedInvite = !isPlayer1 && game.player2Id === null && game.invitedUserId === userId;
+    const isSentInvite = isPlayer1 && game.player2Id === null && !!game.invitedUserId;
+    const opponent = isReceivedInvite ? game.player1 : isPlayer1 ? game.player2 : game.player1;
     const yourPlayerIndex = isPlayer1 ? 0 : 1;
+
+    let kind = "game";
+    if (isReceivedInvite) kind = "received-invite";
+    else if (isSentInvite) kind = "sent-invite";
+
     return {
       code: game.code,
       status: game.status,
+      kind,
       opponent,
+      invitedUser: isSentInvite ? game.invitedUser : undefined,
       isYourTurn: game.status === "playing" && game.currentPlayer === yourPlayerIndex,
       scores: [game.score1, game.score2],
       updatedAt: game.updatedAt,
@@ -252,6 +287,8 @@ export async function submitMove(code, userId, placements) {
   if (!result.accepted) {
     return { rejected: result.reason };
   }
+
+  await repo.recordMove(game.id, yourPlayerIndex, "place", { words: result.words }, result.score);
 
   for (const p of placements) {
     game.board[p.row][p.col] = { letter: p.letter, isBlank: p.isBlank };
@@ -296,6 +333,8 @@ export async function exchangeTiles(code, userId, tiles) {
     return { rejected: "Pas assez de lettres dans le sac." };
   }
 
+  await repo.recordMove(game.id, yourPlayerIndex, "exchange", { tileCount: tiles.length }, 0);
+
   const keep = removeFromRack(rack, tiles);
   const bagWithReturns = [...game.bag, ...tiles.map(({ letter, isBlank }) => ({ letter, isBlank }))];
   const { drawn, remaining: bag } = drawTiles(bagWithReturns, tiles.length);
@@ -322,6 +361,8 @@ export async function passTurn(code, userId) {
   const isPlayer1 = game.player1Id === userId;
   const yourPlayerIndex = isPlayer1 ? 0 : 1;
   if (game.currentPlayer !== yourPlayerIndex) return { error: "Ce n'est pas ton tour." };
+
+  await repo.recordMove(game.id, yourPlayerIndex, "pass", null, 0);
 
   game.consecutivePasses += 1;
   if (game.consecutivePasses >= MAX_CONSECUTIVE_PASSES) {

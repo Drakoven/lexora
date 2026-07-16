@@ -27,6 +27,7 @@ function toRow(game) {
     turn_started_at: game.turnStartedAt,
     winner: game.winner,
     match_type: game.matchType,
+    invited_user_id: game.invitedUserId ?? null,
   };
 }
 
@@ -48,18 +49,23 @@ function fromRow(row) {
     turnStartedAt: row.turn_started_at,
     winner: row.winner,
     matchType: row.match_type,
+    invitedUserId: row.invited_user_id,
     updatedAt: row.updated_at,
     player1: row.player1_username ? { username: row.player1_username, avatar: row.player1_avatar } : undefined,
     player2: row.player2_username ? { username: row.player2_username, avatar: row.player2_avatar } : undefined,
+    invitedUser:
+      row.invited_username ? { username: row.invited_username, avatar: row.invited_avatar } : undefined,
   };
 }
 
 const SELECT_WITH_PLAYERS = `
   SELECT g.*, u1.username AS player1_username, u1.avatar AS player1_avatar,
-         u2.username AS player2_username, u2.avatar AS player2_avatar
+         u2.username AS player2_username, u2.avatar AS player2_avatar,
+         u3.username AS invited_username, u3.avatar AS invited_avatar
   FROM games g
   JOIN users u1 ON u1.id = g.player1_id
   LEFT JOIN users u2 ON u2.id = g.player2_id
+  LEFT JOIN users u3 ON u3.id = g.invited_user_id
 `;
 
 export async function createGame(game) {
@@ -67,8 +73,8 @@ export async function createGame(game) {
   const row = toRow({ ...game, code });
   const [result] = await pool.query(
     `INSERT INTO games (code, player1_id, player2_id, board, bag, rack1, rack2, score1, score2,
-       current_player, consecutive_passes, status, turn_started_at, winner, match_type)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       current_player, consecutive_passes, status, turn_started_at, winner, match_type, invited_user_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       row.code,
       row.player1_id,
@@ -85,6 +91,7 @@ export async function createGame(game) {
       row.turn_started_at,
       row.winner,
       row.match_type,
+      row.invited_user_id,
     ]
   );
   return getGameById(result.insertId);
@@ -116,11 +123,34 @@ export async function deleteGame(id) {
 
 export async function getGamesForUser(userId) {
   const [rows] = await pool.query(
-    `${SELECT_WITH_PLAYERS} WHERE g.player1_id = ? OR g.player2_id = ? ORDER BY g.updated_at DESC`,
-    [userId, userId]
+    `${SELECT_WITH_PLAYERS}
+     WHERE g.player1_id = ? OR g.player2_id = ? OR (g.invited_user_id = ? AND g.status = 'waiting')
+     ORDER BY g.updated_at DESC`,
+    [userId, userId, userId]
   );
 
   return rows.map(fromRow);
+}
+
+export async function recordMove(gameId, playerIndex, moveType, detail, score) {
+  await pool.query(
+    "INSERT INTO game_moves (game_id, player_index, move_type, detail, score) VALUES (?, ?, ?, ?, ?)",
+    [gameId, playerIndex, moveType, detail ? JSON.stringify(detail) : null, score]
+  );
+}
+
+export async function getMovesForGame(gameId) {
+  const [rows] = await pool.query(
+    "SELECT player_index, move_type, detail, score, created_at FROM game_moves WHERE game_id = ? ORDER BY created_at DESC",
+    [gameId]
+  );
+  return rows.map((row) => ({
+    playerIndex: row.player_index,
+    moveType: row.move_type,
+    detail: row.detail,
+    score: row.score,
+    createdAt: row.created_at,
+  }));
 }
 
 export async function saveGame(game) {
