@@ -1,5 +1,6 @@
 import "./Rack.css";
 import { LETTER_VALUES } from "../../game/letters.js";
+import { playTileClickSound } from "../../audio/sounds.js";
 
 function Rack({ tiles, selectedTileId, exchangeSelection, mode, onTileClick }) {
   return (
@@ -12,7 +13,10 @@ function Rack({ tiles, selectedTileId, exchangeSelection, mode, onTileClick }) {
             key={tile.id}
             type="button"
             className={isSelected ? "rack-tile is-selected" : "rack-tile"}
-            onClick={() => onTileClick(tile.id)}
+            onClick={() => {
+              playTileClickSound();
+              onTileClick(tile.id);
+            }}
           >
             <span className="rack-tile-letter">{tile.isBlank ? "" : tile.letter}</span>
             {!tile.isBlank && <span className="rack-tile-value">{LETTER_VALUES[tile.letter]}</span>}

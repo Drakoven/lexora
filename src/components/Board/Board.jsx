@@ -1,5 +1,6 @@
 import "./Board.css";
 import { BOARD_SIZE, getBonus, CENTER } from "../../game/board.js";
+import { playCellClickSound } from "../../audio/sounds.js";
 
 const BONUS_LABELS = { TW: "MOT ×3", DW: "MOT ×2", TL: "LETTRE ×3", DL: "LETTRE ×2" };
 
@@ -27,7 +28,10 @@ function Board({ board, placements, onCellClick }) {
                 key={`${row}-${col}`}
                 type="button"
                 className={className}
-                onClick={() => onCellClick(row, col)}
+                onClick={() => {
+                  playCellClickSound();
+                  onCellClick(row, col);
+                }}
               >
                 {committed && (committed.isBlank ? committed.letter?.toLowerCase() : committed.letter)}
                 {!committed && pending && (pending.isBlank ? pending.letter?.toLowerCase() : pending.letter)}
