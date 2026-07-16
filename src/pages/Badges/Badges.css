@@ -1,0 +1,61 @@
+.badges-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.badges-back {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.badges-back:hover {
+  color: var(--color-text);
+}
+
+.badges-progress {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px;
+  border-radius: 14px;
+  background-color: var(--color-background-soft);
+  text-align: center;
+}
+
+.badge-card-locked {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.badge-emoji {
+  font-size: 2rem;
+}
+
+.badge-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.badge-description {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}

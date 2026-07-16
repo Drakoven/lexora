@@ -1,0 +1,73 @@
+.leaderboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 560px;
+}
+
+.leaderboard-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 40px 32px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: var(--color-background-soft);
+  font-size: 0.95rem;
+}
+
+.leaderboard-row-you {
+  border: 1px solid var(--color-primary);
+}
+
+.leaderboard-position {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.leaderboard-avatar {
+  font-size: 1.3rem;
+}
+
+.leaderboard-username {
+  font-weight: 600;
+}
+
+.leaderboard-tier {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.leaderboard-rating {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.leaderboard-your-position {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .leaderboard-row {
+    grid-template-columns: 32px 28px 1fr;
+    grid-template-areas:
+      "position avatar username"
+      "position avatar tier"
+      "position avatar rating";
+  }
+
+  .leaderboard-tier,
+  .leaderboard-rating {
+    grid-column: 3;
+  }
+}
