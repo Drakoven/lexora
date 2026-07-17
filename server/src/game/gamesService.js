@@ -47,6 +47,10 @@ function switchTurn(game) {
   game.turnStartedAt = new Date();
 }
 
+function currentTurnUserId(game) {
+  return game.currentPlayer === 0 ? game.player1Id : game.player2Id;
+}
+
 async function finishGame(game, playerIndexWhoEmptiedRack) {
   const rack1Value = rackValue(game.rack1);
   const rack2Value = rackValue(game.rack2);
@@ -310,7 +314,7 @@ export async function submitMove(code, userId, placements) {
 
   switchTurn(game);
   const saved = await repo.saveGame(game);
-  return { game: personalize(saved, userId) };
+  return { game: personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
 }
 
 export async function exchangeTiles(code, userId, tiles) {
@@ -349,7 +353,7 @@ export async function exchangeTiles(code, userId, tiles) {
 
   switchTurn(game);
   const saved = await repo.saveGame(game);
-  return { game: personalize(saved, userId) };
+  return { game: personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
 }
 
 export async function passTurn(code, userId) {
@@ -372,7 +376,7 @@ export async function passTurn(code, userId) {
 
   switchTurn(game);
   const saved = await repo.saveGame(game);
-  return { game: personalize(saved, userId) };
+  return { game: personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
 }
 
 export async function claimVictory(code, userId) {

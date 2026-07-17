@@ -1,10 +1,20 @@
 import * as gamesService from "../game/gamesService.js";
 import { notifyGameUpdated } from "../realtime/io.js";
+import { sendPushToUser } from "../push/pushService.js";
 
 function respondMutation(res, code, result) {
   if (result.error) return res.status(400).json({ message: result.error });
   if (result.rejected) return res.json({ accepted: false, reason: result.rejected });
   notifyGameUpdated(code);
+  if (result.nextTurnUserId) {
+    // Fire-and-forget : un envoi lent ou en échec ne doit jamais ralentir
+    // la réponse à l'action du joueur qui vient de jouer.
+    sendPushToUser(result.nextTurnUserId, {
+      title: "À toi de jouer !",
+      body: "C'est ton tour dans une partie Lexora.",
+      url: `/play/online/${code}`,
+    }).catch((err) => console.error("[push] envoi échoué:", err.message));
+  }
   return res.json({ accepted: true, game: result.game });
 }
 

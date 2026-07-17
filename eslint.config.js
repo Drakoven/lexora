@@ -18,4 +18,13 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Service worker : globalThis est `self` dans un contexte différent du
+    // navigateur classique (clients, registration, etc. ne sont pas dans
+    // globals.browser).
+    files: ['src/sw.js'],
+    languageOptions: {
+      globals: globals.serviceworker,
+    },
+  },
 ])

@@ -16,6 +16,7 @@ import gamesRoutes from "./routes/games.routes.js";
 import friendsRoutes from "./routes/friends.routes.js";
 import rankingRoutes from "./routes/ranking.routes.js";
 import badgesRoutes from "./routes/badges.routes.js";
+import pushRoutes from "./routes/push.routes.js";
 import { registerSocketHandlers } from "./realtime/socket.js";
 import { setIO } from "./realtime/io.js";
 
@@ -72,6 +73,7 @@ app.use("/api/games", gamesRoutes);
 app.use("/api/friends", friendsRoutes);
 app.use("/api/ranking", rankingRoutes);
 app.use("/api/badges", badgesRoutes);
+app.use("/api/push", pushRoutes);
 
 if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);

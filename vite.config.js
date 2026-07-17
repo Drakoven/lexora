@@ -7,6 +7,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // injectManifest (plutôt que le generateSW par défaut) : nécessaire
+      // pour pouvoir écouter les évènements "push"/"notificationclick"
+      // (notifications "à toi de jouer") dans un service worker qu'on
+      // écrit nous-mêmes plutôt que de le laisser entièrement généré.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
@@ -28,11 +35,17 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        // Le shell (JS/CSS/HTML) est mis en cache pour un chargement instantané ;
-        // les appels /api/* ne sont jamais interceptés — le jeu a besoin du réseau.
-        navigateFallbackDenylist: [/^\/api\//],
+      injectManifest: {
+        // Mêmes limites de taille par défaut que generateSW, sinon le
+        // build échoue silencieusement sur de gros bundles.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
+      // Pas de devOptions.enabled : self.__WB_MANIFEST n'est pas fiable en
+      // dev avec injectManifest (le SW plante à l'évaluation). Comme pour
+      // le reste de la PWA, le service worker n'est actif que sur un vrai
+      // build (`npm run build` + `npm run preview`, ou en prod) — c'est
+      // déjà comme ça que le service worker avait été vérifié lors du
+      // premier sprint PWA.
     }),
   ],
 })
