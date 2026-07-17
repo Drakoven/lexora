@@ -35,3 +35,14 @@ export function resetPassword(token, newPassword) {
     body: JSON.stringify({ token, newPassword }),
   });
 }
+
+export function verifyEmail(token) {
+  return apiFetch("/api/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export function resendVerification() {
+  return apiFetch("/api/auth/resend-verification", { method: "POST" });
+}

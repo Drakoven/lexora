@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 import "./AppLayout.css";
 import { useAuth } from "../../context/AuthContext.jsx";
+import VerifyEmailBanner from "../VerifyEmailBanner/VerifyEmailBanner.jsx";
 
 function AppLayout({ children }) {
   const { user, logout } = useAuth();
@@ -74,6 +75,8 @@ function AppLayout({ children }) {
           )}
         </nav>
       </header>
+
+      {user && !user.emailVerified && <VerifyEmailBanner />}
 
       <main className="app-content">{children}</main>
 

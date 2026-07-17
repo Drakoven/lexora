@@ -5,6 +5,7 @@ import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
+import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import MentionsLegales from "../pages/MentionsLegales/MentionsLegales";
 import PolitiqueConfidentialite from "../pages/PolitiqueConfidentialite/PolitiqueConfidentialite";
 import Dashboard from "../pages/Dashboard/Dashboard";
@@ -27,6 +28,7 @@ function AppRouter() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />
         <Route

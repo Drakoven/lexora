@@ -1,12 +1,35 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import pool from "../config/db.js";
-import { sendPasswordResetEmail } from "../email/emailService.js";
+import { sendPasswordResetEmail, sendVerificationEmail } from "../email/emailService.js";
 
 const RESET_TOKEN_HOURS = 1;
+const VERIFY_TOKEN_HOURS = 48;
 
 function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+function toAuthUser(row) {
+  return {
+    id: row.id,
+    username: row.username,
+    email: row.email,
+    emailVerified: !!row.email_verified_at,
+  };
+}
+
+async function issueVerificationEmail(userId, email) {
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + VERIFY_TOKEN_HOURS * 60 * 60 * 1000);
+
+  await pool.query(
+    "UPDATE users SET email_verify_token_hash = ?, email_verify_token_expires_at = ? WHERE id = ?",
+    [hashToken(token), expiresAt, userId]
+  );
+
+  const verifyUrl = `${process.env.CLIENT_ORIGIN}/verify-email?token=${token}`;
+  await sendVerificationEmail(email, verifyUrl);
 }
 
 export async function register(req, res) {
@@ -36,7 +59,14 @@ export async function register(req, res) {
 
   req.session.userId = result.insertId;
 
-  res.status(201).json({ id: result.insertId, username, email });
+  try {
+    await issueVerificationEmail(result.insertId, email);
+  } catch {
+    // L'inscription ne doit pas échouer si l'envoi de l'email échoue —
+    // l'utilisateur peut toujours redemander un email depuis le bandeau.
+  }
+
+  res.status(201).json({ id: result.insertId, username, email, emailVerified: false });
 }
 
 export async function login(req, res) {
@@ -47,7 +77,7 @@ export async function login(req, res) {
   }
 
   const [rows] = await pool.query(
-    "SELECT id, username, email, password_hash FROM users WHERE email = ?",
+    "SELECT id, username, email, password_hash, email_verified_at FROM users WHERE email = ?",
     [email]
   );
 
@@ -65,7 +95,7 @@ export async function login(req, res) {
 
   req.session.userId = user.id;
 
-  res.json({ id: user.id, username: user.username, email: user.email });
+  res.json(toAuthUser(user));
 }
 
 export function logout(req, res) {
@@ -138,7 +168,7 @@ export async function me(req, res) {
   }
 
   const [rows] = await pool.query(
-    "SELECT id, username, email FROM users WHERE id = ?",
+    "SELECT id, username, email, email_verified_at FROM users WHERE id = ?",
     [req.session.userId]
   );
 
@@ -148,5 +178,49 @@ export async function me(req, res) {
     return res.status(401).json({ message: "Non connecté." });
   }
 
-  res.json(user);
+  res.json(toAuthUser(user));
+}
+
+export async function verifyEmail(req, res) {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ message: "Requête invalide." });
+  }
+
+  const [rows] = await pool.query(
+    "SELECT id FROM users WHERE email_verify_token_hash = ? AND email_verify_token_expires_at > NOW()",
+    [hashToken(token)]
+  );
+  const user = rows[0];
+
+  if (!user) {
+    return res.status(400).json({ message: "Ce lien est invalide ou a expiré." });
+  }
+
+  await pool.query(
+    "UPDATE users SET email_verified_at = NOW(), email_verify_token_hash = NULL, email_verify_token_expires_at = NULL WHERE id = ?",
+    [user.id]
+  );
+
+  res.status(204).end();
+}
+
+export async function resendVerification(req, res) {
+  const [rows] = await pool.query(
+    "SELECT id, email, email_verified_at FROM users WHERE id = ?",
+    [req.session.userId]
+  );
+  const user = rows[0];
+
+  if (!user) {
+    return res.status(401).json({ message: "Non connecté." });
+  }
+  if (user.email_verified_at) {
+    return res.status(400).json({ message: "Ton email est déjà vérifié." });
+  }
+
+  await issueVerificationEmail(user.id, user.email);
+
+  res.status(204).end();
 }
