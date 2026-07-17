@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { loginLimiter, authActionLimiter } from "../middleware/rateLimiters.js";
 import {
   register,
   login,
@@ -15,13 +16,13 @@ const router = Router();
 
 const asyncHandler = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
-router.post("/register", asyncHandler(register));
-router.post("/login", asyncHandler(login));
+router.post("/register", authActionLimiter, asyncHandler(register));
+router.post("/login", loginLimiter, asyncHandler(login));
 router.post("/logout", logout);
 router.get("/me", asyncHandler(me));
-router.post("/forgot-password", asyncHandler(forgotPassword));
+router.post("/forgot-password", authActionLimiter, asyncHandler(forgotPassword));
 router.post("/reset-password", asyncHandler(resetPassword));
 router.post("/verify-email", asyncHandler(verifyEmail));
-router.post("/resend-verification", requireAuth, asyncHandler(resendVerification));
+router.post("/resend-verification", requireAuth, authActionLimiter, asyncHandler(resendVerification));
 
 export default router;
