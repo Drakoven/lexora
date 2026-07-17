@@ -11,6 +11,13 @@ import {
   verifyEmail,
   resendVerification,
 } from "../controllers/auth.controller.js";
+import passport from "../config/passport.js";
+import {
+  googleCallback,
+  facebookCallback,
+  requireGoogleEnabled,
+  requireFacebookEnabled,
+} from "../controllers/oauth.controller.js";
 
 const router = Router();
 
@@ -24,5 +31,18 @@ router.post("/forgot-password", authActionLimiter, asyncHandler(forgotPassword))
 router.post("/reset-password", asyncHandler(resetPassword));
 router.post("/verify-email", asyncHandler(verifyEmail));
 router.post("/resend-verification", requireAuth, authActionLimiter, asyncHandler(resendVerification));
+
+router.get(
+  "/google",
+  requireGoogleEnabled,
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+);
+router.get("/google/callback", googleCallback);
+router.get(
+  "/facebook",
+  requireFacebookEnabled,
+  passport.authenticate("facebook", { scope: ["email"], session: false })
+);
+router.get("/facebook/callback", facebookCallback);
 
 export default router;

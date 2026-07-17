@@ -1,4 +1,10 @@
-import { apiFetch } from "./client.js";
+import { apiFetch, API_URL } from "./client.js";
+
+// Navigation complète (pas fetch) : le backend redirige vers Google/Facebook
+// puis fixe la session côté serveur avant de rediriger vers le frontend.
+export function oauthUrl(provider) {
+  return `${API_URL}/api/auth/${provider}`;
+}
 
 export function register({ username, email, password }) {
   return apiFetch("/api/auth/register", {

@@ -2,6 +2,7 @@ import "./RegisterForm.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../Button/Button.jsx";
+import OAuthButtons from "../OAuthButtons/OAuthButtons.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 function RegisterForm({ onBack }) {
@@ -92,6 +93,10 @@ function RegisterForm({ onBack }) {
           disabled={isSubmitting}
         />
       </form>
+
+      {/* Pas de gestion de ?oauthError ici : toute erreur OAuth redirige
+          vers /login quel que soit le point de départ, volontairement. */}
+      <OAuthButtons />
     </section>
   );
 }

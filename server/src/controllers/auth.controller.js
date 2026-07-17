@@ -10,7 +10,7 @@ function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-function toAuthUser(row) {
+export function toAuthUser(row) {
   return {
     id: row.id,
     username: row.username,
@@ -83,7 +83,10 @@ export async function login(req, res) {
 
   const user = rows[0];
 
-  if (!user) {
+  // Un password_hash NULL correspond à un compte créé uniquement via OAuth
+  // (Google/Facebook) — même réponse générique que "email inconnu" ou
+  // "mauvais mot de passe", pour ne pas révéler qu'un compte est OAuth-only.
+  if (!user || !user.password_hash) {
     return res.status(401).json({ message: "Identifiants invalides." });
   }
 
@@ -117,6 +120,9 @@ export async function forgotPassword(req, res) {
 
   // Toujours une réponse générique, qu'un compte existe ou non, pour ne pas
   // permettre de deviner quels emails sont inscrits (énumération de comptes).
+  // Fonctionne aussi sur un compte OAuth-only (password_hash NULL) : le lien
+  // donne alors un vrai mot de passe local en plus de la connexion Google/
+  // Facebook — comportement accepté volontairement, pas une fuite.
   if (user) {
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + RESET_TOKEN_HOURS * 60 * 60 * 1000);

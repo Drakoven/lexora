@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import session from "express-session";
 import MySQLStoreFactory from "express-mysql-session";
+import passport from "./config/passport.js";
 import { Server } from "socket.io";
 
 import pool from "./config/db.js";
@@ -60,6 +61,9 @@ app.use(
 );
 app.use(express.json());
 app.use(sessionMiddleware);
+// Pas de passport.session() : l'authentification OAuth garde la même source
+// de vérité que le reste de l'app, req.session.userId (voir config/passport.js).
+app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
