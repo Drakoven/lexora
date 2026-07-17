@@ -1,4 +1,5 @@
 import "dotenv/config";
+import * as Sentry from "@sentry/node";
 import { createServer } from "http";
 import express from "express";
 import cors from "cors";
@@ -19,6 +20,15 @@ import { setIO } from "./realtime/io.js";
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
+
+// Optionnel : n'active Sentry que si un DSN est fourni (comme SMTP_HOST pour
+// l'email), pour que le dev local n'ait pas besoin d'un compte Sentry.
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: isProduction ? "production" : "development",
+  });
+}
 
 // Nécessaire derrière le reverse proxy d'un hébergement mutualisé (O2Switch, etc.)
 // pour que req.secure / les cookies "secure" reflètent bien la requête HTTPS d'origine.
@@ -58,6 +68,10 @@ app.use("/api/games", gamesRoutes);
 app.use("/api/friends", friendsRoutes);
 app.use("/api/ranking", rankingRoutes);
 app.use("/api/badges", badgesRoutes);
+
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 app.use((err, req, res, next) => {
   console.error(err);
