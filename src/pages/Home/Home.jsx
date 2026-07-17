@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import "./Home.css";
 import Hero from "../../components/Hero/Hero.jsx";
@@ -47,6 +47,11 @@ function Home() {
           </Modal>
         </>
       )}
+
+      <footer className="home-footer">
+        <Link to="/mentions-legales">Mentions légales</Link>
+        <Link to="/politique-de-confidentialite">Politique de confidentialité</Link>
+      </footer>
     </div>
   );
 }

@@ -1,0 +1,29 @@
+.legal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  line-height: 1.6;
+}
+
+.legal-page h1 {
+  margin-bottom: 24px;
+}
+
+.legal-page section {
+  margin-bottom: 28px;
+}
+
+.legal-page h2 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+  color: var(--color-primary);
+}
+
+.legal-page p {
+  margin: 0 0 8px;
+  color: var(--color-text-muted);
+}
+
+.legal-page a {
+  color: var(--color-primary);
+}

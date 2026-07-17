@@ -76,6 +76,11 @@ function AppLayout({ children }) {
       </header>
 
       <main className="app-content">{children}</main>
+
+      <footer className="app-footer">
+        <NavLink to="/mentions-legales">Mentions légales</NavLink>
+        <NavLink to="/politique-de-confidentialite">Politique de confidentialité</NavLink>
+      </footer>
     </div>
   );
 }
