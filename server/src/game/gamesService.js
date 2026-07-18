@@ -77,7 +77,7 @@ async function finishGame(game, playerIndexWhoEmptiedRack) {
   }
 
   if (saved.matchType === "random") {
-    await applyRankedResult(saved.player1Id, saved.player2Id, saved.winner);
+    await applyRankedResult(saved.player1Id, saved.player2Id, saved.winner, saved.id);
   }
 
   return saved;

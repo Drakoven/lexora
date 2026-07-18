@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import "./Profile.css";
 import AppLayout from "../../components/AppLayout/AppLayout.jsx";
 import AvatarPicker from "../../components/AvatarPicker/AvatarPicker.jsx";
+import RatingChart from "../../components/RatingChart/RatingChart.jsx";
 import { AVATARS } from "../../constants/avatars.js";
 import { TIER_STYLES } from "../../constants/tiers.js";
 import * as profileApi from "../../api/profile.js";
 import * as badgesApi from "../../api/badges.js";
+import * as rankingApi from "../../api/ranking.js";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
@@ -19,6 +21,7 @@ function Profile() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [badgeCount, setBadgeCount] = useState(null);
+  const [ratingHistory, setRatingHistory] = useState(null);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   useEffect(() => {
@@ -26,6 +29,7 @@ function Profile() {
     badgesApi.getBadges().then((badges) => {
       setBadgeCount({ earned: badges.filter((b) => b.earned).length, total: badges.length });
     });
+    rankingApi.getRatingHistory().then(setRatingHistory);
   }, []);
 
   async function handleSelectAvatar(avatar) {
@@ -108,6 +112,8 @@ function Profile() {
             </span>
           )}
         </section>
+
+        <RatingChart history={ratingHistory} />
 
         <button type="button" className="profile-badges-link" onClick={() => navigate("/badges")}>
           🏅 Badges — {badgeCount ? `${badgeCount.earned} / ${badgeCount.total} débloqués` : "..."}

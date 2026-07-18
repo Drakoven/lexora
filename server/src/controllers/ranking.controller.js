@@ -36,3 +36,10 @@ export async function getLeaderboard(req, res) {
 
   res.json({ leaderboard, you });
 }
+
+export async function getRatingHistory(req, res) {
+  const history = await rankingRepo.getRatingHistory(req.session.userId);
+  res.json(
+    history.map((row) => ({ rating: row.rating, createdAt: row.created_at }))
+  );
+}

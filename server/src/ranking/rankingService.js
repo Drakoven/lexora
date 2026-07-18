@@ -1,7 +1,7 @@
 import pool from "../config/db.js";
 import { computeEloUpdate } from "../game/elo.js";
 
-export async function applyRankedResult(player1Id, player2Id, winner) {
+export async function applyRankedResult(player1Id, player2Id, winner, gameId) {
   const [rows] = await pool.query(
     "SELECT id, rating FROM users WHERE id IN (?, ?)",
     [player1Id, player2Id]
@@ -17,7 +17,16 @@ export async function applyRankedResult(player1Id, player2Id, winner) {
     [newRating1, newRating1, player1Id]
   );
   await pool.query(
+    "INSERT INTO rating_history (user_id, game_id, rating) VALUES (?, ?, ?)",
+    [player1Id, gameId, newRating1]
+  );
+
+  await pool.query(
     "UPDATE users SET rating = ?, ranked_games = ranked_games + 1, best_rating = GREATEST(best_rating, ?) WHERE id = ?",
     [newRating2, newRating2, player2Id]
+  );
+  await pool.query(
+    "INSERT INTO rating_history (user_id, game_id, rating) VALUES (?, ?, ?)",
+    [player2Id, gameId, newRating2]
   );
 }
