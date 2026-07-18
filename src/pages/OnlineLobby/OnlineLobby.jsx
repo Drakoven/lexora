@@ -18,6 +18,7 @@ function OnlineLobby() {
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [games, setGames] = useState([]);
+  const [botDifficulty, setBotDifficulty] = useState("medium");
 
   useEffect(() => {
     gamesApi.listGames().then(setGames);
@@ -51,7 +52,7 @@ function OnlineLobby() {
     setError("");
     setIsBusy(true);
     try {
-      const game = await gamesApi.createBotGame();
+      const game = await gamesApi.createBotGame(botDifficulty);
       navigate(`/play/online/${game.code}`);
     } catch (err) {
       setError(err.message);
@@ -135,6 +136,38 @@ function OnlineLobby() {
         <section className="online-lobby-card">
           <h2>Jouer contre un bot</h2>
           <p>Entraîne-toi contre "Lexora Bot" à ton rythme. Partie amicale, sans impact sur ton classement.</p>
+          <div className="online-lobby-difficulty">
+            <label>
+              <input
+                type="radio"
+                name="bot-difficulty"
+                value="easy"
+                checked={botDifficulty === "easy"}
+                onChange={() => setBotDifficulty("easy")}
+              />
+              Facile
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="bot-difficulty"
+                value="medium"
+                checked={botDifficulty === "medium"}
+                onChange={() => setBotDifficulty("medium")}
+              />
+              Moyen
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="bot-difficulty"
+                value="hard"
+                checked={botDifficulty === "hard"}
+                onChange={() => setBotDifficulty("hard")}
+              />
+              Difficile
+            </label>
+          </div>
           <Button text="Jouer contre le bot" disabled={isBusy} onClick={handleBotGame} />
         </section>
 

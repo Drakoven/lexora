@@ -67,6 +67,7 @@ function OnlineGame() {
   const [now, setNow] = useState(() => Date.now());
   const [moves, setMoves] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [scorePreview, setScorePreview] = useState(null);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);
@@ -117,6 +118,45 @@ function OnlineGame() {
     () => (game ? availableRackTiles(game.yourRack, placements) : []),
     [game, placements]
   );
+
+  const placementsKey = useMemo(
+    () =>
+      [...placements]
+        .sort((a, b) => a.row - b.row || a.col - b.col)
+        .map((p) => `${p.row},${p.col},${p.letter},${p.isBlank}`)
+        .join("|"),
+    [placements]
+  );
+
+  // scorePreview ne s'affiche que si sa clé correspond aux placements
+  // actuels (voir plus bas) — évite d'avoir à "effacer" synchronement l'état
+  // dans l'effet quand les placements deviennent invalides, un preview
+  // simplement obsolète ne matche plus la clé et disparaît de lui-même.
+  useEffect(() => {
+    if (!game || !game.isYourTurn || placements.length === 0 || !isStructurallyValid(game.board, placements)) {
+      return;
+    }
+
+    let cancelled = false;
+    const key = placementsKey;
+    const timer = setTimeout(() => {
+      gamesApi
+        .previewMove(code, placements)
+        .then((result) => {
+          if (!cancelled) setScorePreview(result.accepted ? { key, score: result.score } : null);
+        })
+        .catch(() => {
+          if (!cancelled) setScorePreview(null);
+        });
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [code, game, placements, placementsKey]);
+
+  const displayedScorePreview = scorePreview && scorePreview.key === placementsKey ? scorePreview.score : null;
 
   if (loadError) {
     return (
@@ -313,7 +353,10 @@ function OnlineGame() {
               {game.players[1]?.username} : {game.scores[1]}
             </span>
           </div>
-          <div className="game-timer">{formatRemaining(game.turnStartedAt, game.turnHours, now)}</div>
+          <div className="game-status-right">
+            <span className="game-bag-count">🎒 {game.bagCount} lettre{game.bagCount !== 1 ? "s" : ""}</span>
+            <div className="game-timer">{formatRemaining(game.turnStartedAt, game.turnHours, now)}</div>
+          </div>
         </div>
 
         {game.isOpponentTurnOverdue && (
@@ -338,6 +381,12 @@ function OnlineGame() {
           mode={mode}
           onTileClick={handleTileClick}
         />
+
+        {mode === "place" && displayedScorePreview !== null && (
+          <p className="game-score-preview">
+            Ce mot rapporterait {displayedScorePreview} point{displayedScorePreview !== 1 ? "s" : ""}
+          </p>
+        )}
 
         <div className="game-actions">
           {mode === "place" ? (

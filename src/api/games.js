@@ -4,8 +4,11 @@ export function createGame() {
   return apiFetch("/api/games", { method: "POST" });
 }
 
-export function createBotGame() {
-  return apiFetch("/api/games/bot", { method: "POST" });
+export function createBotGame(difficulty) {
+  return apiFetch("/api/games/bot", {
+    method: "POST",
+    body: JSON.stringify({ difficulty }),
+  });
 }
 
 export function joinGame(code) {
@@ -40,6 +43,13 @@ export function getGame(code) {
 
 export function getMoves(code) {
   return apiFetch(`/api/games/${code}/moves`);
+}
+
+export function previewMove(code, placements) {
+  return apiFetch(`/api/games/${code}/preview`, {
+    method: "POST",
+    body: JSON.stringify({ placements }),
+  });
 }
 
 export function submitMove(code, placements) {

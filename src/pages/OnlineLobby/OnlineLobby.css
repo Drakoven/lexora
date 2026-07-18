@@ -47,6 +47,29 @@
   font-weight: 600;
 }
 
+.online-lobby-difficulty {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.online-lobby-difficulty label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.online-lobby-difficulty input[type="radio"] {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  accent-color: var(--color-primary);
+}
+
 .online-lobby-games {
   list-style: none;
   display: flex;

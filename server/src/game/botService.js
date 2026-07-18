@@ -18,16 +18,32 @@ export async function maybeTriggerBotTurn(code, nextTurnUserId) {
   }, delay);
 }
 
+// Le rack le plus fort n'est joué qu'en difficile — en dessous, on pioche
+// volontairement un coup plus faible dans les candidats déjà triés par
+// score décroissant par generateMoves, sans toucher au moteur lui-même.
+function pickMove(candidates, difficulty) {
+  if (difficulty === "hard") return candidates[0];
+
+  const poolStart =
+    difficulty === "easy" ? Math.floor(candidates.length * 0.5) : 0;
+  const poolEnd =
+    difficulty === "easy" ? candidates.length : Math.max(1, Math.ceil(candidates.length * 0.3));
+  const pool = candidates.slice(poolStart, poolEnd);
+
+  return pool[Math.floor(Math.random() * pool.length)] || candidates[candidates.length - 1];
+}
+
 async function playBotTurn(code, botUserId) {
   const game = await repo.getGameByCode(code);
   if (!game || game.status !== "playing" || game.matchType !== "bot") return;
 
   const rack = game.player2Id === botUserId ? game.rack2 : game.rack1;
   const candidates = generateMoves(game.board, rack);
+  const move = candidates.length > 0 ? pickMove(candidates, game.botDifficulty || "medium") : null;
 
   const result =
-    candidates.length > 0
-      ? await gamesService.submitMove(code, botUserId, candidates[0].placements)
+    move != null
+      ? await gamesService.submitMove(code, botUserId, move.placements)
       : game.bag.length > 0
         ? await gamesService.exchangeTiles(code, botUserId, rack.slice(0, Math.min(rack.length, game.bag.length)))
         : await gamesService.passTurn(code, botUserId);

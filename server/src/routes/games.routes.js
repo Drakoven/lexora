@@ -10,6 +10,7 @@ import {
   listGames,
   getGame,
   getMoves,
+  previewMove,
   submitMove,
   exchangeTiles,
   passTurn,
@@ -28,6 +29,7 @@ router.post("/matchmaking", requireAuth, asyncHandler(findMatch));
 router.get("/", requireAuth, asyncHandler(listGames));
 router.get("/:code", requireAuth, asyncHandler(getGame));
 router.get("/:code/moves", requireAuth, asyncHandler(getMoves));
+router.post("/:code/preview", requireAuth, asyncHandler(previewMove));
 router.post("/:code/move", requireAuth, asyncHandler(submitMove));
 router.post("/:code/exchange", requireAuth, asyncHandler(exchangeTiles));
 router.post("/:code/pass", requireAuth, asyncHandler(passTurn));

@@ -20,7 +20,7 @@ export async function createGame(req, res) {
 }
 
 export async function createBotGame(req, res) {
-  const game = await gamesService.createBotGame(req.session.userId);
+  const game = await gamesService.createBotGame(req.session.userId, req.body.difficulty);
   res.status(201).json(game);
 }
 
@@ -69,6 +69,14 @@ export async function getMoves(req, res) {
   const result = await gamesService.getMovesForGame(req.params.code.toUpperCase(), req.session.userId);
   if (result.error) return res.status(404).json({ message: result.error });
   res.json(result.moves);
+}
+
+export async function previewMove(req, res) {
+  const code = req.params.code.toUpperCase();
+  const result = await gamesService.previewMove(code, req.session.userId, req.body.placements);
+  if (result.error) return res.status(400).json({ message: result.error });
+  if (result.rejected) return res.json({ accepted: false, reason: result.rejected });
+  res.json(result);
 }
 
 export async function submitMove(req, res) {

@@ -28,6 +28,7 @@ function toRow(game) {
     winner: game.winner,
     match_type: game.matchType,
     invited_user_id: game.invitedUserId ?? null,
+    bot_difficulty: game.botDifficulty ?? null,
   };
 }
 
@@ -50,6 +51,7 @@ function fromRow(row) {
     winner: row.winner,
     matchType: row.match_type,
     invitedUserId: row.invited_user_id,
+    botDifficulty: row.bot_difficulty,
     updatedAt: row.updated_at,
     player1: row.player1_username ? { username: row.player1_username, avatar: row.player1_avatar } : undefined,
     player2: row.player2_username ? { username: row.player2_username, avatar: row.player2_avatar } : undefined,
@@ -73,8 +75,8 @@ export async function createGame(game) {
   const row = toRow({ ...game, code });
   const [result] = await pool.query(
     `INSERT INTO games (code, player1_id, player2_id, board, bag, rack1, rack2, score1, score2,
-       current_player, consecutive_passes, status, turn_started_at, winner, match_type, invited_user_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       current_player, consecutive_passes, status, turn_started_at, winner, match_type, invited_user_id, bot_difficulty)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       row.code,
       row.player1_id,
@@ -92,6 +94,7 @@ export async function createGame(game) {
       row.winner,
       row.match_type,
       row.invited_user_id,
+      row.bot_difficulty,
     ]
   );
   return getGameById(result.insertId);

@@ -180,8 +180,11 @@ export async function createGame(userId, matchType = "code", invitedUserId = nul
   return personalize(game, userId);
 }
 
-export async function createBotGame(userId) {
+const BOT_DIFFICULTIES = ["easy", "medium", "hard"];
+
+export async function createBotGame(userId, difficulty) {
   const botUserId = await getBotUserId();
+  const botDifficulty = BOT_DIFFICULTIES.includes(difficulty) ? difficulty : "medium";
   const game = await repo.createGame({
     player1Id: userId,
     player2Id: null,
@@ -198,6 +201,7 @@ export async function createBotGame(userId) {
     winner: null,
     matchType: "bot",
     invitedUserId: null,
+    botDifficulty,
   });
   const started = await startGame(game, botUserId);
   return personalize(started, userId);
@@ -292,6 +296,30 @@ export async function listGamesForUser(userId) {
       updatedAt: game.updatedAt,
     };
   });
+}
+
+// Lecture seule : calcule le score d'un coup sans rien enregistrer ni
+// changer de tour, pour l'aperçu en temps réel côté client. Réutilise
+// exactement le même moteur que submitMove — le serveur reste le seul
+// juge du mot/dictionnaire/score, même pour un simple aperçu.
+export async function previewMove(code, userId, placements) {
+  const game = await repo.getGameByCode(code);
+  if (!game) return { error: "Partie introuvable." };
+  if (game.player1Id !== userId && game.player2Id !== userId) {
+    return { error: "Tu ne fais pas partie de cette partie." };
+  }
+  if (game.status !== "playing") return { error: "Cette partie n'est plus en cours." };
+
+  const isPlayer1 = game.player1Id === userId;
+  const rack = isPlayer1 ? game.rack1 : game.rack2;
+
+  if (!Array.isArray(placements) || placements.length === 0 || !canAfford(rack, placements)) {
+    return { rejected: "Coup invalide (tuiles indisponibles)." };
+  }
+
+  const result = runValidateMove(game.board, placements);
+  if (!result.accepted) return { rejected: result.reason };
+  return { accepted: true, score: result.score, words: result.words, isBingo: result.isBingo };
 }
 
 export async function submitMove(code, userId, placements) {
