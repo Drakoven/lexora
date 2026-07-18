@@ -4,6 +4,10 @@ export function createGame() {
   return apiFetch("/api/games", { method: "POST" });
 }
 
+export function createBotGame() {
+  return apiFetch("/api/games/bot", { method: "POST" });
+}
+
 export function joinGame(code) {
   return apiFetch("/api/games/join", {
     method: "POST",

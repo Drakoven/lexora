@@ -19,6 +19,7 @@ import badgesRoutes from "./routes/badges.routes.js";
 import pushRoutes from "./routes/push.routes.js";
 import { registerSocketHandlers } from "./realtime/socket.js";
 import { setIO } from "./realtime/io.js";
+import { getBotUserId } from "./game/botUser.js";
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -101,3 +102,7 @@ const port = process.env.PORT || 4000;
 httpServer.listen(port, () => {
   console.log(`Lexora API en écoute sur http://localhost:${port}`);
 });
+
+// Bootstrap idempotent du compte bot (pas de migration data-seed, voir
+// botUser.js) — ne bloque pas le démarrage, juste loggé si ça échoue.
+getBotUserId().catch((err) => console.error("[bot] échec du bootstrap du compte bot:", err));

@@ -5,6 +5,7 @@ import { createBag, drawTiles, RACK_SIZE, LETTER_VALUES } from "./letters.js";
 import { createEmptyBoard } from "./board.js";
 import { applyRankedResult } from "../ranking/rankingService.js";
 import { recordGameResult } from "../stats/statsService.js";
+import { getBotUserId } from "./botUser.js";
 
 export const TURN_HOURS = 48;
 const TURN_MS = TURN_HOURS * 60 * 60 * 1000;
@@ -177,6 +178,29 @@ export async function createGame(userId, matchType = "code", invitedUserId = nul
     invitedUserId,
   });
   return personalize(game, userId);
+}
+
+export async function createBotGame(userId) {
+  const botUserId = await getBotUserId();
+  const game = await repo.createGame({
+    player1Id: userId,
+    player2Id: null,
+    board: createEmptyBoard(),
+    bag: [],
+    rack1: [],
+    rack2: [],
+    score1: 0,
+    score2: 0,
+    currentPlayer: 0,
+    consecutivePasses: 0,
+    status: "waiting",
+    turnStartedAt: null,
+    winner: null,
+    matchType: "bot",
+    invitedUserId: null,
+  });
+  const started = await startGame(game, botUserId);
+  return personalize(started, userId);
 }
 
 export async function inviteFriend(userId, friendUserId) {

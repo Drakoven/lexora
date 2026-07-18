@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
 import {
   createGame,
+  createBotGame,
   joinGame,
   inviteFriend,
   findMatch,
@@ -20,6 +21,7 @@ const router = Router();
 const asyncHandler = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
 router.post("/", requireAuth, asyncHandler(createGame));
+router.post("/bot", requireAuth, asyncHandler(createBotGame));
 router.post("/join", requireAuth, asyncHandler(joinGame));
 router.post("/invite", requireAuth, asyncHandler(inviteFriend));
 router.post("/matchmaking", requireAuth, asyncHandler(findMatch));

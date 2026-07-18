@@ -47,6 +47,18 @@ function OnlineLobby() {
     }
   }
 
+  async function handleBotGame() {
+    setError("");
+    setIsBusy(true);
+    try {
+      const game = await gamesApi.createBotGame();
+      navigate(`/play/online/${game.code}`);
+    } catch (err) {
+      setError(err.message);
+      setIsBusy(false);
+    }
+  }
+
   async function handleOpenGame(game) {
     if (game.kind !== "received-invite") {
       navigate(`/play/online/${game.code}`);
@@ -118,6 +130,12 @@ function OnlineLobby() {
           <p>On te trouve un adversaire disponible, ou tu attends qu'un autre joueur cherche aussi.</p>
           <p className="online-lobby-ranked-note">Cette partie compte pour ton classement.</p>
           <Button text="Trouver une partie" disabled={isBusy} onClick={handleRandomMatch} />
+        </section>
+
+        <section className="online-lobby-card">
+          <h2>Jouer contre un bot</h2>
+          <p>Entraîne-toi contre "Lexora Bot" à ton rythme. Partie amicale, sans impact sur ton classement.</p>
+          <Button text="Jouer contre le bot" disabled={isBusy} onClick={handleBotGame} />
         </section>
 
         <section className="online-lobby-card">
