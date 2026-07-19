@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "@sentry/node": "^10.66.0",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "hunspell-reader": "^10.0.1",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "vitest": "^4.1.10"
   }
 }

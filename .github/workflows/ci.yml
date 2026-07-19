@@ -1,0 +1,36 @@
+name: CI
+
+# Tourne sur un runner hébergé par GitHub, comme n'importe quel workflow
+# standard — contrairement à deploy.yml, aucune connexion SSH vers
+# O2Switch n'est nécessaire ici, donc pas concerné par le blocage IP qui a
+# forcé le passage de deploy.yml sur un runner auto-hébergé.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: server
+
+      - name: Run backend tests
+        run: npm test
+        working-directory: server
