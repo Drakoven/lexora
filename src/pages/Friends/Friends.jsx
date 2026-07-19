@@ -98,7 +98,7 @@ function Friends() {
             onClick={() =>
               shareOnFacebook({
                 url: "https://lexora-jeu.fr/",
-                quote: "Je joue à Lexora, un Scrabble en ligne entre amis — viens jouer avec moi ! 🀄",
+                quote: "Je joue à Lexora, un jeu de lettres en ligne entre amis — viens jouer avec moi ! 🀄",
               })
             }
           >
