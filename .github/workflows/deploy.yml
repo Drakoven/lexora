@@ -15,9 +15,14 @@ jobs:
         with:
           node-version: 20
 
+      # npm install plutôt que npm ci : sharp (devDependency, script ponctuel
+      # de génération d'icônes, jamais utilisé au build) tire des paquets
+      # optionnels différents selon la plateforme (Windows vs Linux), ce qui
+      # fait dériver package-lock.json d'un OS à l'autre — npm ci est trop
+      # strict pour ce cas, npm install se contente de résoudre correctement.
       - name: Build frontend
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Set up SSH
