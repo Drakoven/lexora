@@ -1,11 +1,21 @@
 name: Deploy to production
 
+# Runner auto-hébergé (le PC de l'utilisateur) plutôt qu'un runner GitHub
+# hébergé : O2Switch bloque silencieusement les connexions SSH entrantes
+# depuis les plages IP des runners GitHub (confirmé : TCP connect sur le
+# port 22 timeout côté runner hébergé), mais accepte celles venant de l'IP
+# habituelle de l'utilisateur. Déclenchement toujours manuel — l'utilisateur
+# doit démarrer le runner (run.cmd) avant de lancer ce workflow.
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,26 +27,12 @@ jobs:
 
       # npm install plutôt que npm ci : sharp (devDependency, script ponctuel
       # de génération d'icônes, jamais utilisé au build) tire des paquets
-      # optionnels différents selon la plateforme (Windows vs Linux), ce qui
-      # fait dériver package-lock.json d'un OS à l'autre — npm ci est trop
-      # strict pour ce cas, npm install se contente de résoudre correctement.
+      # optionnels différents selon la plateforme, ce qui fait dériver
+      # package-lock.json — npm ci est trop strict pour ce cas.
       - name: Build frontend
         run: |
           npm install
           npm run build
-
-      # Diagnostic temporaire : confirme si le blocage vient d'un refus actif
-      # (port fermé / connexion refusée, réponse rapide) ou d'un pare-feu qui
-      # droppe silencieusement les paquets (timeout long) — utile pour savoir
-      # si c'est une restriction IP côté hébergeur avant d'aller plus loin.
-      # Placé AVANT "Set up SSH" pour s'exécuter même si ssh-keyscan échoue.
-      - name: Debug SSH connectivity
-        run: |
-          echo "Runner outbound IP:"
-          curl -s https://api.ipify.org || true
-          echo ""
-          echo "TCP connect test to port 22:"
-          timeout 10 bash -c "cat < /dev/null > /dev/tcp/${{ secrets.SSH_HOST }}/22" && echo "TCP CONNECT OK" || echo "TCP CONNECT FAILED (exit $?)"
 
       - name: Set up SSH
         run: |
@@ -45,21 +41,28 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
+      # Pas de rsync (pas dispo nativement sur le runner Windows) : tar+ssh
+      # donne le même résultat (miroir complet, gère les dotfiles comme
+      # .htaccess) sans dépendance supplémentaire. On vide le dossier avant
+      # de réextraire pour ne pas laisser traîner d'anciens bundles JS/CSS
+      # (noms de fichiers hashés par Vite à chaque build).
       - name: Deploy frontend (dist/ -> ~/lexora-jeu.fr)
         run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/deploy_key" \
-            dist/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/lexora-jeu.fr/"
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "find ~/lexora-jeu.fr -mindepth 1 -delete"
+          tar -C dist -czf - . | ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "tar -xzf - -C ~/lexora-jeu.fr"
 
-      # node_modules et .env restent intacts sur le serveur : rsync ne
-      # supprime jamais un fichier exclu côté destination (comportement par
-      # défaut, sans --delete-excluded).
+      # node_modules et .env ne sont jamais touchés : exclus du tar source ET
+      # jamais supprimés côté serveur (le find ne cible que les autres
+      # entrées à la racine de ~/lexora.api).
       - name: Deploy backend (server/ -> ~/lexora.api)
         run: |
-          rsync -avz --delete \
-            --exclude 'node_modules' \
-            --exclude '.env' \
-            -e "ssh -i ~/.ssh/deploy_key" \
-            server/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/lexora.api/"
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "find ~/lexora.api -mindepth 1 -maxdepth 1 ! -name node_modules ! -name .env -exec rm -rf {} +"
+          tar -C server --exclude=node_modules --exclude=.env -czf - . | \
+            ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "tar -xzf - -C ~/lexora.api"
 
       # touch tmp/restart.txt déclenche un redémarrage gracieux de l'app par
       # Phusion Passenger (le moteur derrière le Node.js Selector de cPanel),
