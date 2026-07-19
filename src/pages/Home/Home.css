@@ -10,6 +10,13 @@
     padding: 24px;
 }
 
+/* Le <main> ajouté pour l'accessibilité (repère de page) ne doit pas
+   casser le centrage flex de .home sur ses enfants — display: contents
+   le retire de la boîte visuelle tout en gardant le repère sémantique. */
+.home main {
+    display: contents;
+}
+
 .home-footer {
     position: fixed;
     bottom: 16px;
