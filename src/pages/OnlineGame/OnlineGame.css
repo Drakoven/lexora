@@ -81,7 +81,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
   width: 100%;
   max-width: 520px;
 }
@@ -103,10 +104,12 @@
 .game-status-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
-.game-bag-count {
+.game-bag-count,
+.game-opponent-rack-count {
   color: var(--color-text-muted);
   font-size: 0.85rem;
   font-weight: 600;

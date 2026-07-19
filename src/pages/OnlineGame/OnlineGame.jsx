@@ -421,6 +421,9 @@ function OnlineGame() {
           </div>
           <div className="game-status-right">
             <span className="game-bag-count">🎒 {game.bagCount} lettre{game.bagCount !== 1 ? "s" : ""}</span>
+            <span className="game-opponent-rack-count">
+              🀄 Adversaire : {game.opponentRackSize} lettre{game.opponentRackSize !== 1 ? "s" : ""}
+            </span>
             <div className="game-timer">{formatRemaining(game.turnStartedAt, game.turnHours, now)}</div>
           </div>
         </div>
