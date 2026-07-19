@@ -7,6 +7,7 @@ import Button from "../../components/Button/Button.jsx";
 import { AVATARS } from "../../constants/avatars.js";
 import * as friendsApi from "../../api/friends.js";
 import * as gamesApi from "../../api/games.js";
+import { shareOnFacebook } from "../../social/facebookShare.js";
 
 function avatarEmoji(avatar) {
   return AVATARS.find((a) => a.key === avatar)?.emoji || "🙂";
@@ -87,6 +88,23 @@ function Friends() {
     <AppLayout>
       <div className="friends-page">
         <h1>Amis</h1>
+
+        <section className="friends-card">
+          <h2>Inviter des amis</h2>
+          <p>Fais découvrir Lexora à tes amis Facebook.</p>
+          <button
+            type="button"
+            className="friends-share-button"
+            onClick={() =>
+              shareOnFacebook({
+                url: "https://lexora-jeu.fr/",
+                quote: "Je joue à Lexora, un Scrabble en ligne entre amis — viens jouer avec moi ! 🀄",
+              })
+            }
+          >
+            Inviter sur Facebook
+          </button>
+        </section>
 
         <section className="friends-card">
           <h2>Ajouter un ami</h2>

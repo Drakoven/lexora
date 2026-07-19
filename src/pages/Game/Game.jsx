@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 import { createBag, drawTiles, RACK_SIZE, LETTER_VALUES } from "../../game/letters.js";
 import { createEmptyBoard, isStructurallyValid } from "../../game/board.js";
 import * as gameApi from "../../api/game.js";
+import { shareOnFacebook } from "../../social/facebookShare.js";
 
 const TURN_SECONDS = 90;
 const MAX_CONSECUTIVE_PASSES = 4;
@@ -313,6 +314,10 @@ function Game() {
   }
 
   if (state.phase === "finished") {
+    const resultText =
+      state.winnerIndex === null
+        ? "Égalité !"
+        : `${state.playerNames[state.winnerIndex]} remporte la partie !`;
     return (
       <AppLayout>
         <div className="game-finished">
@@ -320,11 +325,19 @@ function Game() {
           <p className="game-final-scores">
             {state.playerNames[0]} : {state.scores[0]} pts — {state.playerNames[1]} : {state.scores[1]} pts
           </p>
-          <p>
-            {state.winnerIndex === null
-              ? "Égalité !"
-              : `${state.playerNames[state.winnerIndex]} remporte la partie !`}
-          </p>
+          <p>{resultText}</p>
+          <button
+            type="button"
+            className="online-game-share-button"
+            onClick={() =>
+              shareOnFacebook({
+                url: "https://lexora-jeu.fr/",
+                quote: `Partie de Lexora terminée : ${state.playerNames[0]} ${state.scores[0]} pts — ${state.playerNames[1]} ${state.scores[1]} pts. ${resultText}`,
+              })
+            }
+          >
+            Partager sur Facebook
+          </button>
         </div>
       </AppLayout>
     );

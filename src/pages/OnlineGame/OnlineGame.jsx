@@ -10,6 +10,7 @@ import { LETTER_VALUES } from "../../game/letters.js";
 import { isStructurallyValid } from "../../game/board.js";
 import { socket } from "../../socket.js";
 import * as gamesApi from "../../api/games.js";
+import { shareOnFacebook } from "../../social/facebookShare.js";
 
 const REACTIONS = ["👍", "😂", "😮", "😢", "🔥", "🤔"];
 
@@ -265,6 +266,7 @@ function OnlineGame() {
 
   if (game.status === "finished") {
     const isDraw = game.winner === null;
+    const resultText = isDraw ? "Égalité !" : `${game.players[game.winner]?.username} remporte la partie !`;
     return (
       <AppLayout>
         <div className="online-game-waiting">
@@ -272,7 +274,19 @@ function OnlineGame() {
           <p className="online-game-final-scores">
             {game.players[0]?.username} : {game.scores[0]} pts — {game.players[1]?.username} : {game.scores[1]} pts
           </p>
-          <p>{isDraw ? "Égalité !" : `${game.players[game.winner]?.username} remporte la partie !`}</p>
+          <p>{resultText}</p>
+          <button
+            type="button"
+            className="online-game-share-button"
+            onClick={() =>
+              shareOnFacebook({
+                url: "https://lexora-jeu.fr/",
+                quote: `Partie de Lexora terminée : ${game.players[0]?.username} ${game.scores[0]} pts — ${game.players[1]?.username} ${game.scores[1]} pts. ${resultText}`,
+              })
+            }
+          >
+            Partager sur Facebook
+          </button>
           {renderHistory()}
           {renderAnalysis()}
           <Button text="Retour au tableau de bord" onClick={() => navigate("/dashboard")} />
