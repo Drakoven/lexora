@@ -9,9 +9,12 @@ name: Deploy to production
 on:
   workflow_dispatch:
 
+# "bash" n'est pas résolu par le runner Windows (PATH du service différent
+# d'un shell interactif) même si Git Bash est installé — chemin explicite
+# vers l'exécutable requis.
 defaults:
   run:
-    shell: bash
+    shell: "C:\\Program Files\\Git\\bin\\bash.exe -e {0}"
 
 jobs:
   deploy:
