@@ -105,3 +105,36 @@ En local, avant de builder :
   n'existent que dans la base MySQL locale — la base de prod démarre vide.
 - Pense à changer `SESSION_SECRET` et le mot de passe MySQL par rapport au
   `.env` de dev (celui-ci ne doit jamais être réutilisé en production).
+
+## 5. Déploiement continu (après la mise en place initiale)
+
+Une fois les étapes 1 à 4 faites une première fois (domaine, base, app
+Node.js cPanel créée), les mises à jour de code n'ont plus besoin d'être
+refaites à la main : un workflow GitHub Actions
+(`.github/workflows/deploy.yml`) automatise build + transfert + redémarrage
+via SSH/rsync (l'hébergement Node.js d'O2Switch tourne derrière Phusion
+Passenger, qui redémarre l'app dès qu'on touche `tmp/restart.txt` — pas
+besoin de passer par l'UI cPanel).
+
+**Déclenchement** : manuel uniquement (`workflow_dispatch`), volontairement
+— pas de déploiement automatique à chaque push sur `main`. Depuis l'onglet
+"Actions" du dépôt GitHub, choisir le workflow "Deploy to production" puis
+"Run workflow".
+
+**Secrets requis** (Settings > Secrets and variables > Actions du dépôt) :
+- `SSH_PRIVATE_KEY` : clé privée d'une paire SSH dédiée au déploiement (pas
+  la clé personnelle), dont la clé publique a été autorisée côté cPanel
+  (Accès SSH > Importer une clé > Autoriser).
+- `SSH_HOST` : `lexora-jeu.fr`
+- `SSH_USER` : `dufl1993`
+
+**Ce que le pipeline fait** : build du frontend (`npm run build`, utilise le
+`.env.production` déjà committé), `rsync` de `dist/` vers `~/lexora-jeu.fr/`
+et de `server/` (hors `node_modules`/`.env`) vers `~/lexora.api/`, puis
+`npm install --omit=dev` et redémarrage.
+
+**Ce que le pipeline ne fait PAS** : aucune migration de base de données.
+Si un déploiement inclut un nouveau fichier `server/src/db/0XX_*.sql`, il
+continue à se lancer à la main via SSH (`mysql -u ... -p ... < fichier.sql`)
+comme décrit à l'étape 1 — volontairement non automatisé pour garder une
+revue humaine avant tout changement de schéma en prod.

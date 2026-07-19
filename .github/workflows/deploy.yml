@@ -1,0 +1,52 @@
+name: Deploy to production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend (dist/ -> ~/lexora-jeu.fr)
+        run: |
+          rsync -avz --delete -e "ssh -i ~/.ssh/deploy_key" \
+            dist/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/lexora-jeu.fr/"
+
+      # node_modules et .env restent intacts sur le serveur : rsync ne
+      # supprime jamais un fichier exclu côté destination (comportement par
+      # défaut, sans --delete-excluded).
+      - name: Deploy backend (server/ -> ~/lexora.api)
+        run: |
+          rsync -avz --delete \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            server/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/lexora.api/"
+
+      # touch tmp/restart.txt déclenche un redémarrage gracieux de l'app par
+      # Phusion Passenger (le moteur derrière le Node.js Selector de cPanel),
+      # sans passer par l'UI ou l'API cPanel.
+      - name: Install backend dependencies and restart
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            'source ~/nodevenv/lexora.api/24/bin/activate && cd ~/lexora.api && npm install --omit=dev && mkdir -p tmp && touch tmp/restart.txt'
