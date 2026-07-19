@@ -9,12 +9,9 @@ name: Deploy to production
 on:
   workflow_dispatch:
 
-# "bash" n'est pas résolu par le runner Windows (PATH du service différent
-# d'un shell interactif) même si Git Bash est installé — chemin explicite
-# vers l'exécutable requis.
 defaults:
   run:
-    shell: "C:\\Program Files\\Git\\bin\\bash.exe -e {0}"
+    shell: bash
 
 jobs:
   deploy:
@@ -22,6 +19,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # "bash" n'est pas résolu par le PATH du processus runner (différent
+      # d'un shell interactif) même si Git Bash est installé — on l'ajoute
+      # explicitement au PATH des étapes suivantes via GITHUB_PATH.
+      - name: Add Git Bash to PATH
+        shell: pwsh
+        run: |
+          "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Setup Node
         uses: actions/setup-node@v4
