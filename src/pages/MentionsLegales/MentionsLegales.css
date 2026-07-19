@@ -26,4 +26,5 @@
 
 .legal-page a {
   color: var(--color-primary-text);
+  text-decoration: underline;
 }

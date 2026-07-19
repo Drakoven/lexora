@@ -42,3 +42,14 @@
     color: var(--color-error);
     font-size: 0.9rem;
 }
+
+.register-form-terms {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: 16px;
+}
+
+.register-form-terms a {
+    color: var(--color-primary-text);
+    text-decoration: underline;
+}

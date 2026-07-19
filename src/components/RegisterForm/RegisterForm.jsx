@@ -1,6 +1,6 @@
 import "./RegisterForm.css";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Button from "../Button/Button.jsx";
 import OAuthButtons from "../OAuthButtons/OAuthButtons.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -93,6 +93,12 @@ function RegisterForm({ onBack }) {
           disabled={isSubmitting}
         />
       </form>
+
+      <p className="register-form-terms">
+        En créant un compte, tu acceptes nos{" "}
+        <Link to="/conditions-utilisation">conditions générales d'utilisation</Link> et notre{" "}
+        <Link to="/politique-de-confidentialite">politique de confidentialité</Link>.
+      </p>
 
       {/* Pas de gestion de ?oauthError ici : toute erreur OAuth redirige
           vers /login quel que soit le point de départ, volontairement. */}

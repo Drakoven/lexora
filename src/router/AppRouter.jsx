@@ -8,6 +8,7 @@ import ResetPassword from "../pages/ResetPassword/ResetPassword";
 import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import MentionsLegales from "../pages/MentionsLegales/MentionsLegales";
 import PolitiqueConfidentialite from "../pages/PolitiqueConfidentialite/PolitiqueConfidentialite";
+import ConditionsUtilisation from "../pages/ConditionsUtilisation/ConditionsUtilisation";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Game from "../pages/Game/Game";
 import Profile from "../pages/Profile/Profile";
@@ -31,6 +32,7 @@ function AppRouter() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />
+        <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
         <Route
           path="/dashboard"
           element={

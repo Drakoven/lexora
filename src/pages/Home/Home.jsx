@@ -53,6 +53,7 @@ function Home() {
       <footer className="home-footer">
         <Link to="/mentions-legales">Mentions légales</Link>
         <Link to="/politique-de-confidentialite">Politique de confidentialité</Link>
+        <Link to="/conditions-utilisation">CGU</Link>
       </footer>
     </div>
   );
