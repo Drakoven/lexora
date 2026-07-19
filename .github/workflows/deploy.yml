@@ -25,6 +25,19 @@ jobs:
           npm install
           npm run build
 
+      # Diagnostic temporaire : confirme si le blocage vient d'un refus actif
+      # (port fermé / connexion refusée, réponse rapide) ou d'un pare-feu qui
+      # droppe silencieusement les paquets (timeout long) — utile pour savoir
+      # si c'est une restriction IP côté hébergeur avant d'aller plus loin.
+      # Placé AVANT "Set up SSH" pour s'exécuter même si ssh-keyscan échoue.
+      - name: Debug SSH connectivity
+        run: |
+          echo "Runner outbound IP:"
+          curl -s https://api.ipify.org || true
+          echo ""
+          echo "TCP connect test to port 22:"
+          timeout 10 bash -c "cat < /dev/null > /dev/tcp/${{ secrets.SSH_HOST }}/22" && echo "TCP CONNECT OK" || echo "TCP CONNECT FAILED (exit $?)"
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
