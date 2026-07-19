@@ -6,6 +6,7 @@ import { createEmptyBoard } from "./board.js";
 import { applyRankedResult } from "../ranking/rankingService.js";
 import { recordGameResult } from "../stats/statsService.js";
 import { getBotUserId } from "./botUser.js";
+import { generateMoves } from "./moveGenerator.js";
 
 export const TURN_HOURS = 48;
 const TURN_MS = TURN_HOURS * 60 * 60 * 1000;
@@ -272,6 +273,43 @@ export async function getMovesForGame(code, userId) {
   return { moves };
 }
 
+// Analyse post-partie ("meilleur coup manqué") : ne porte que sur les coups
+// de placement du joueur qui demande l'analyse — pas ceux de l'adversaire
+// (et surtout pas ceux du bot, qui sous-joue volontairement hors difficulté
+// "difficile", ce qui n'aurait aucun sens à signaler comme un "coup manqué").
+// rackBefore/boardBefore sont capturés au moment du coup (voir submitMove) ;
+// les parties terminées avant l'ajout de ces champs restent simplement non
+// analysables, sans erreur.
+export async function getGameAnalysis(code, userId) {
+  const game = await repo.getGameByCode(code);
+  if (!game) return { error: "Partie introuvable." };
+  if (game.player1Id !== userId && game.player2Id !== userId) return { error: "Tu ne fais pas partie de cette partie." };
+  if (game.status !== "finished") return { error: "L'analyse n'est disponible qu'une fois la partie terminée." };
+
+  const yourPlayerIndex = game.player1Id === userId ? 0 : 1;
+  const moves = await repo.getMovesForGame(game.id);
+
+  const analysis = moves
+    .filter((move) => move.moveType === "place" && move.playerIndex === yourPlayerIndex)
+    .map((move) => {
+      const { words, rackBefore, boardBefore } = move.detail || {};
+      if (!rackBefore || !boardBefore) return null;
+
+      const candidates = generateMoves(boardBefore, rackBefore);
+      const bestScore = candidates[0]?.score ?? move.score;
+      return {
+        createdAt: move.createdAt,
+        words,
+        score: move.score,
+        bestScore,
+        bestWords: bestScore > move.score ? candidates[0].words : null,
+      };
+    })
+    .filter(Boolean);
+
+  return { analysis };
+}
+
 export async function listGamesForUser(userId) {
   const games = await repo.getGamesForUser(userId);
   return games.map((game) => {
@@ -344,7 +382,17 @@ export async function submitMove(code, userId, placements) {
     return { rejected: result.reason };
   }
 
-  await repo.recordMove(game.id, yourPlayerIndex, "place", { words: result.words }, result.score);
+  // rackBefore/boardBefore alimentent l'analyse post-partie (meilleur coup
+  // manqué) : un instantané complet évite d'avoir à rejouer l'historique
+  // pour retrouver l'état du plateau/chevalet à ce moment précis. Capturé
+  // ici, avant la mutation de game.board plus bas.
+  await repo.recordMove(
+    game.id,
+    yourPlayerIndex,
+    "place",
+    { words: result.words, placements, rackBefore: rack, boardBefore: game.board },
+    result.score
+  );
 
   for (const p of placements) {
     game.board[p.row][p.col] = { letter: p.letter, isBlank: p.isBlank };

@@ -71,6 +71,13 @@ export async function getMoves(req, res) {
   res.json(result.moves);
 }
 
+export async function getAnalysis(req, res) {
+  const code = req.params.code.toUpperCase();
+  const result = await gamesService.getGameAnalysis(code, req.session.userId);
+  if (result.error) return res.status(400).json({ message: result.error });
+  res.json(result.analysis);
+}
+
 export async function previewMove(req, res) {
   const code = req.params.code.toUpperCase();
   const result = await gamesService.previewMove(code, req.session.userId, req.body.placements);

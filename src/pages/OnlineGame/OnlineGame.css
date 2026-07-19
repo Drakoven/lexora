@@ -177,6 +177,40 @@
   text-align: center;
 }
 
+.online-game-analysis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.online-game-analysis-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.online-game-analysis-list li {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background-color: var(--color-background-soft);
+  font-size: 0.85rem;
+}
+
+.online-game-analysis-missed {
+  color: var(--color-error);
+}
+
+.online-game-analysis-optimal {
+  color: var(--color-success);
+}
+
 .blank-picker-overlay {
   position: fixed;
   inset: 0;

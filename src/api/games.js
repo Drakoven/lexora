@@ -45,6 +45,10 @@ export function getMoves(code) {
   return apiFetch(`/api/games/${code}/moves`);
 }
 
+export function getAnalysis(code) {
+  return apiFetch(`/api/games/${code}/analysis`);
+}
+
 export function previewMove(code, placements) {
   return apiFetch(`/api/games/${code}/preview`, {
     method: "POST",

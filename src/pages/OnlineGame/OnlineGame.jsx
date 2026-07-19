@@ -68,6 +68,10 @@ function OnlineGame() {
   const [moves, setMoves] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [scorePreview, setScorePreview] = useState(null);
+  const [analysis, setAnalysis] = useState(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState("");
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);
@@ -213,6 +217,52 @@ function OnlineGame() {
     );
   }
 
+  async function handleToggleAnalysis() {
+    if (!showAnalysis && analysis === null) {
+      setAnalysisLoading(true);
+      setAnalysisError("");
+      try {
+        setAnalysis(await gamesApi.getAnalysis(code));
+      } catch (err) {
+        setAnalysisError(err.message);
+      } finally {
+        setAnalysisLoading(false);
+      }
+    }
+    setShowAnalysis(!showAnalysis);
+  }
+
+  function renderAnalysis() {
+    return (
+      <div className="online-game-analysis">
+        <button type="button" className="game-secondary-action" onClick={handleToggleAnalysis}>
+          {showAnalysis ? "Masquer l'analyse" : "Voir l'analyse de mes coups"}
+        </button>
+        {showAnalysis && analysisLoading && <p>Calcul de l'analyse...</p>}
+        {showAnalysis && analysisError && <p className="game-message">{analysisError}</p>}
+        {showAnalysis && !analysisLoading && analysis && (
+          <ul className="online-game-analysis-list">
+            {analysis.length === 0 && (
+              <li className="online-game-history-empty">Aucun coup de placement à analyser.</li>
+            )}
+            {analysis.map((entry, i) =>
+              entry.bestWords ? (
+                <li key={i} className="online-game-analysis-missed">
+                  Tu as joué {entry.words.join(", ")} pour {entry.score} points — meilleur coup possible :{" "}
+                  {entry.bestWords.join(", ")} pour {entry.bestScore} points.
+                </li>
+              ) : (
+                <li key={i} className="online-game-analysis-optimal">
+                  {entry.words.join(", ")} pour {entry.score} points — coup optimal !
+                </li>
+              )
+            )}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   if (game.status === "finished") {
     const isDraw = game.winner === null;
     return (
@@ -224,6 +274,7 @@ function OnlineGame() {
           </p>
           <p>{isDraw ? "Égalité !" : `${game.players[game.winner]?.username} remporte la partie !`}</p>
           {renderHistory()}
+          {renderAnalysis()}
           <Button text="Retour au tableau de bord" onClick={() => navigate("/dashboard")} />
         </div>
       </AppLayout>
