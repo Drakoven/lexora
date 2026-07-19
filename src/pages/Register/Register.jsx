@@ -7,9 +7,10 @@ function Register() {
   const navigate = useNavigate();
 
   return (
-    <div className="register-page">
+    <main className="register-page">
+      <h1 className="visually-hidden">Créer un compte — Lexora</h1>
       <RegisterForm onBack={() => navigate("/")} />
-    </div>
+    </main>
   );
 }
 

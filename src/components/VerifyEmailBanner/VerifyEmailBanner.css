@@ -17,7 +17,7 @@
   border: 1px solid var(--color-primary);
   border-radius: 999px;
   padding: 4px 14px;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
@@ -29,6 +29,6 @@
 }
 
 .verify-email-banner-sent {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   font-weight: 600;
 }

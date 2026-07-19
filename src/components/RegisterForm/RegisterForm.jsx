@@ -49,7 +49,7 @@ function RegisterForm({ onBack }) {
       </button>
 
       <h2 className="register-form-title">Créer un compte</h2>
-      {error && <p className="register-form-error">{error}</p>}
+      {error && <p className="register-form-error" role="alert">{error}</p>}
 
       <form className="register-form-fields" onSubmit={handleSubmit}>
         <label htmlFor="username">Pseudo</label>

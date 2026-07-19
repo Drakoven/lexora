@@ -16,7 +16,7 @@
 .legal-page h2 {
   font-size: 1.15rem;
   margin-bottom: 8px;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .legal-page p {
@@ -25,7 +25,7 @@
 }
 
 .legal-page a {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .legal-updated {

@@ -4,6 +4,11 @@
 
   --color-primary: #7c3aed;
   --color-primary-hover: #8b5cf6;
+  /* #7c3aed échoue le contraste minimal (2.85:1) utilisé en couleur de
+     texte sur les fonds sombres de l'app — réservé aux fonds/bordures
+     (le texte blanc par-dessus passe très bien). Pour du texte violet,
+     utiliser cette variante plus claire (5.98:1 sur --color-background-soft). */
+  --color-primary-text: #a78bfa;
 
   --color-text: #f8fafc;
   --color-text-muted: #aab4c4;

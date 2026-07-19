@@ -17,7 +17,7 @@ function VerifyEmailBanner() {
   }
 
   return (
-    <div className="verify-email-banner">
+    <div className="verify-email-banner" role="region" aria-label="Vérification de l'email">
       <span>Pense à vérifier ton adresse email pour sécuriser ton compte.</span>
       {status === "sent" ? (
         <span className="verify-email-banner-sent">Email renvoyé !</span>

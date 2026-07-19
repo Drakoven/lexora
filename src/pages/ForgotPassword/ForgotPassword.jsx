@@ -32,7 +32,8 @@ function ForgotPassword() {
   }
 
   return (
-    <div className="login-page">
+    <main className="login-page">
+      <h1 className="visually-hidden">Mot de passe oublié — Lexora</h1>
       <section className="login-form">
         <button className="back-button" onClick={() => navigate("/login")}>
           ← Retour
@@ -48,7 +49,7 @@ function ForgotPassword() {
         ) : (
           <>
             <p>Entre ton email, on t'envoie un lien pour choisir un nouveau mot de passe.</p>
-            {error && <p className="login-form-error">{error}</p>}
+            {error && <p className="login-form-error" role="alert">{error}</p>}
 
             <form onSubmit={handleSubmit}>
               <label htmlFor="email">Email</label>
@@ -71,7 +72,7 @@ function ForgotPassword() {
           </>
         )}
       </section>
-    </div>
+    </main>
   );
 }
 

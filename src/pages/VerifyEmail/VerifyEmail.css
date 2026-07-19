@@ -42,7 +42,7 @@
 }
 
 .back-button:hover {
-  color: var(--color-primary);
+  color: var(--color-primary-text);
   transform: translateX(-4px);
 }
 

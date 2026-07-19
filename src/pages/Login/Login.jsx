@@ -7,9 +7,10 @@ function Login() {
   const navigate = useNavigate();
 
   return (
-    <div className="login-page">
+    <main className="login-page">
+      <h1 className="visually-hidden">Connexion — Lexora</h1>
       <LoginForm onBack={() => navigate("/")} />
-    </div>
+    </main>
   );
 }
 

@@ -72,7 +72,7 @@ function Settings() {
             <Button text={busy ? "..." : "Désactiver les notifications"} onClick={handleDisable} disabled={busy} />
           )}
 
-          {error && <p className="settings-error">{error}</p>}
+          {error && <p className="settings-error" role="alert">{error}</p>}
 
           <p className="settings-hint">
             Sur iPhone/iPad, installe d'abord Lexora sur l'écran d'accueil (Partager →

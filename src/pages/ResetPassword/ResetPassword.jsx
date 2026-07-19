@@ -42,18 +42,19 @@ function ResetPassword() {
 
   if (!token) {
     return (
-      <div className="login-page">
+      <main className="login-page">
         <section className="login-form">
-          <h2 className="login-form-title">Lien invalide</h2>
+          <h1 className="login-form-title">Lien invalide</h1>
           <p>Ce lien de réinitialisation est incomplet ou invalide.</p>
           <Button text="Demander un nouveau lien" onClick={() => navigate("/forgot-password")} />
         </section>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="login-page">
+    <main className="login-page">
+      <h1 className="visually-hidden">Nouveau mot de passe — Lexora</h1>
       <section className="login-form">
         <h2 className="login-form-title">Nouveau mot de passe</h2>
 
@@ -64,7 +65,7 @@ function ResetPassword() {
           </>
         ) : (
           <>
-            {error && <p className="login-form-error">{error}</p>}
+            {error && <p className="login-form-error" role="alert">{error}</p>}
 
             <form onSubmit={handleSubmit}>
               <label htmlFor="password">Nouveau mot de passe</label>
@@ -99,7 +100,7 @@ function ResetPassword() {
           </>
         )}
       </section>
-    </div>
+    </main>
   );
 }
 

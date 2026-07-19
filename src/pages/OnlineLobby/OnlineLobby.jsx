@@ -187,7 +187,7 @@ function OnlineLobby() {
               onChange={(e) => setJoinCode(e.target.value)}
               maxLength={6}
             />
-            {error && <p className="online-lobby-error">{error}</p>}
+            {error && <p className="online-lobby-error" role="alert">{error}</p>}
             <Button text="Rejoindre" disabled={isBusy} />
           </form>
         </section>

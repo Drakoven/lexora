@@ -395,6 +395,7 @@ function OnlineGame() {
   return (
     <AppLayout>
       <div className="game-page">
+        <h1 className="visually-hidden">Partie en ligne — Lexora</h1>
         <div className="game-status">
           <div className="game-scores">
             <span className={game.currentPlayerIndex === 0 ? "game-score is-active" : "game-score"}>
@@ -419,7 +420,7 @@ function OnlineGame() {
           </p>
         )}
 
-        {error && <p className="game-message">{error}</p>}
+        {error && <p className="game-message" role="alert">{error}</p>}
         {!game.isYourTurn && !error && <p className="game-message">En attente du coup adverse...</p>}
         {reactionBubble && <p className="online-game-reaction-bubble">{reactionBubble}</p>}
 
@@ -485,10 +486,14 @@ function OnlineGame() {
         {renderHistory()}
 
         {pendingBlank && (
-          <div className="blank-picker-overlay">
-            <div className="blank-picker">
-              <h2>Quelle lettre pour ce joker ?</h2>
-              <select value={blankLetterChoice} onChange={(e) => setBlankLetterChoice(e.target.value)}>
+          <div className="blank-picker-overlay" onKeyDown={(e) => e.key === "Escape" && setPendingBlank(null)}>
+            <div className="blank-picker" role="dialog" aria-modal="true" aria-labelledby="blank-picker-title">
+              <h2 id="blank-picker-title">Quelle lettre pour ce joker ?</h2>
+              <select
+                autoFocus
+                value={blankLetterChoice}
+                onChange={(e) => setBlankLetterChoice(e.target.value)}
+              >
                 {Object.keys(LETTER_VALUES).map((letter) => (
                   <option key={letter} value={letter}>
                     {letter}

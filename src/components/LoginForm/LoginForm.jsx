@@ -65,7 +65,7 @@ function LoginForm({ onBack }) {
       </button>
 
       <h2 className="login-form-title">Se connecter</h2>
-      {error && <p className="login-form-error">{error}</p>}
+      {error && <p className="login-form-error" role="alert">{error}</p>}
 
     <form onSubmit={handleSubmit}>
       <label htmlFor="email">Email</label>

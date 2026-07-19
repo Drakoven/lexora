@@ -32,7 +32,8 @@ function VerifyEmail() {
   }, [token]);
 
   return (
-    <div className="login-page">
+    <main className="login-page">
+      <h1 className="visually-hidden">Vérification de l'email — Lexora</h1>
       <section className="login-form">
         <h2 className="login-form-title">Vérification de l'email</h2>
 
@@ -55,7 +56,7 @@ function VerifyEmail() {
           </>
         )}
       </section>
-    </div>
+    </main>
   );
 }
 

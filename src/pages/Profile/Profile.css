@@ -62,7 +62,7 @@
 .profile-stat-value {
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .profile-stat-label {

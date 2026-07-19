@@ -1,5 +1,5 @@
 .login-link {
-    color: var(--color-primary);
+    color: var(--color-primary-text);
     text-decoration: none;
     font-weight: 600;
     transition: color .2s ease;

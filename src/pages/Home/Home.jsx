@@ -18,35 +18,37 @@ function Home() {
 
   return (
     <div className="home">
-      <Hero />
+      <main>
+        <Hero />
 
-      <Button
-        text="JOUER"
-        onClick={() => {
-          setCurrentModal("play");
-          setIsModalOpen(true);
-        }}
-      />
+        <Button
+          text="JOUER"
+          onClick={() => {
+            setCurrentModal("play");
+            setIsModalOpen(true);
+          }}
+        />
 
-      <LoginLink />
+        <LoginLink />
 
-      {isModalOpen && (
-        <>
-          <Overlay onClick={() => setIsModalOpen(false)} />
+        {isModalOpen && (
+          <>
+            <Overlay onClick={() => setIsModalOpen(false)} />
 
-          <Modal>
-            {currentModal === "play" && (
-              <PlayMenu
-                onGuest={() => navigate("/game")}
-                onLogin={() => setCurrentModal("login")}
-                onRegister={() => setCurrentModal("register")}
-              />
-      )}
-            {currentModal === "login" && <LoginForm onBack={() => setCurrentModal("play")} />}
-            {currentModal === "register" && <RegisterForm onBack={() => setCurrentModal("play")} />}
-          </Modal>
-        </>
-      )}
+            <Modal>
+              {currentModal === "play" && (
+                <PlayMenu
+                  onGuest={() => navigate("/game")}
+                  onLogin={() => setCurrentModal("login")}
+                  onRegister={() => setCurrentModal("register")}
+                />
+              )}
+              {currentModal === "login" && <LoginForm onBack={() => setCurrentModal("play")} />}
+              {currentModal === "register" && <RegisterForm onBack={() => setCurrentModal("play")} />}
+            </Modal>
+          </>
+        )}
+      </main>
 
       <footer className="home-footer">
         <Link to="/mentions-legales">Mentions légales</Link>

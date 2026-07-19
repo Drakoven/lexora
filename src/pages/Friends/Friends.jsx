@@ -97,7 +97,7 @@ function Friends() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-            {error && <p className="friends-error">{error}</p>}
+            {error && <p className="friends-error" role="alert">{error}</p>}
             <Button text="Envoyer une demande" disabled={isBusy} />
           </form>
         </section>

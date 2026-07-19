@@ -41,9 +41,18 @@
   text-align: center;
 }
 
-.badge-card-locked {
+/* opacity: 0.4 sur toute la carte cassait le contraste du texte (label/
+   description tombaient sous 3:1) — le grisé/estompage ne s'applique
+   maintenant qu'à l'emoji (purement décoratif), le texte reste à 0.75
+   (encore visiblement "verrouillé", mais garde 4.98:1+ de contraste). */
+.badge-card-locked .badge-emoji {
   opacity: 0.4;
   filter: grayscale(1);
+}
+
+.badge-card-locked .badge-label,
+.badge-card-locked .badge-description {
+  opacity: 0.75;
 }
 
 .badge-emoji {
