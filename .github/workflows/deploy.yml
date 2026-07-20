@@ -24,7 +24,7 @@ jobs:
       # d'un shell interactif) même si Git Bash est installé — on l'ajoute
       # explicitement au PATH des étapes suivantes via GITHUB_PATH.
       - name: Add Git Bash to PATH
-        shell: pwsh
+        shell: powershell
         run: |
           "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
