@@ -1,5 +1,6 @@
 import * as gamesService from "../game/gamesService.js";
 import { notifyMutationResult } from "../game/notifyMutation.js";
+import { notifyGameUpdated } from "../realtime/io.js";
 import * as botService from "../game/botService.js";
 
 function respondMutation(res, code, result) {

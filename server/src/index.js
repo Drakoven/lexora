@@ -80,7 +80,9 @@ if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);
 }
 
-app.use((err, req, res, next) => {
+// Express reconnaît un middleware d'erreur à son arité (4 paramètres),
+// peu importe leur nom — _next reste nécessaire même sans être utilisé.
+app.use((err, req, res, _next) => {
   console.error(err);
   res.status(500).json({ message: "Erreur serveur." });
 });
