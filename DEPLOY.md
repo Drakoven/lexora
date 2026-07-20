@@ -112,14 +112,32 @@ Une fois les étapes 1 à 4 faites une première fois (domaine, base, app
 Node.js cPanel créée), les mises à jour de code n'ont plus besoin d'être
 refaites à la main : un workflow GitHub Actions
 (`.github/workflows/deploy.yml`) automatise build + transfert + redémarrage
-via SSH/rsync (l'hébergement Node.js d'O2Switch tourne derrière Phusion
+via SSH (l'hébergement Node.js d'O2Switch tourne derrière Phusion
 Passenger, qui redémarre l'app dès qu'on touche `tmp/restart.txt` — pas
 besoin de passer par l'UI cPanel).
+
+**Runner auto-hébergé, pas un runner GitHub classique** : O2Switch bloque
+silencieusement les connexions SSH entrantes depuis les plages IP des
+runners GitHub hébergés, donc le job tourne sur ta propre machine
+(`C:\Users\Flori\actions-runner`), enregistrée comme runner du dépôt. Avant
+de déclencher un déploiement, démarre-le :
+```
+cd C:\Users\Flori\actions-runner
+.\run.cmd
+```
+et laisse la fenêtre ouverte jusqu'à "Listening for Jobs". Pas besoin de
+`rsync` (absent nativement sur Windows) : le transfert se fait en
+tar+ssh, ce qui donne le même résultat (miroir complet du dossier,
+dotfiles comme `.htaccess` inclus).
 
 **Déclenchement** : manuel uniquement (`workflow_dispatch`), volontairement
 — pas de déploiement automatique à chaque push sur `main`. Depuis l'onglet
 "Actions" du dépôt GitHub, choisir le workflow "Deploy to production" puis
-"Run workflow".
+"Run workflow", ou en CLI : `gh workflow run deploy.yml`. Suivre le run
+avec `gh run watch <run-id>`. **Testé et fonctionnel de bout en bout le
+2026-07-20** — build, transfert frontend/backend, `npm install`,
+redémarrage, vérifié en prod après coup (accueil OK, inscription + partie
+bot OK).
 
 **Secrets requis** (Settings > Secrets and variables > Actions du dépôt) :
 - `SSH_PRIVATE_KEY` : clé privée d'une paire SSH dédiée au déploiement (pas
