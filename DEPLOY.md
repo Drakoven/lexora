@@ -147,12 +147,65 @@ bot OK).
 - `SSH_USER` : `dufl1993`
 
 **Ce que le pipeline fait** : build du frontend (`npm run build`, utilise le
-`.env.production` déjà committé), `rsync` de `dist/` vers `~/lexora-jeu.fr/`
-et de `server/` (hors `node_modules`/`.env`) vers `~/lexora.api/`, puis
-`npm install --omit=dev` et redémarrage.
+`.env.production` déjà committé), transfert (tar+ssh) de `dist/` vers
+`~/lexora-jeu.fr/` et de `server/` (hors `node_modules`/`.env`) vers
+`~/lexora.api/`, puis `npm install --omit=dev` et redémarrage.
 
 **Ce que le pipeline ne fait PAS** : aucune migration de base de données.
 Si un déploiement inclut un nouveau fichier `server/src/db/0XX_*.sql`, il
 continue à se lancer à la main via SSH (`mysql -u ... -p ... < fichier.sql`)
 comme décrit à l'étape 1 — volontairement non automatisé pour garder une
 revue humaine avant tout changement de schéma en prod.
+
+## 6. Environnement de staging
+
+Une deuxième copie complète du site, isolée de la prod (sous-domaines,
+base de données et app Node.js cPanel séparés), pour tester un déploiement
+avant de le pousser en production — plus besoin de vérifier chaque fix
+directement sur le vrai site avec des comptes jetables à nettoyer ensuite.
+
+**Sous-domaines** : `staging.lexora-jeu.fr` (frontend) et
+`staging-api.lexora-jeu.fr` (backend) — même procédure DNS/AutoSSL que
+`api.lexora-jeu.fr` (voir Prérequis).
+
+**Base de données MySQL** : une base **séparée** de la prod (ex.
+`dufl1993_lexora_staging`), même procédure que l'étape 1, migrations
+rejouées à l'identique (`server/src/db/combined_migrations.sql` en un seul
+import phpMyAdmin plutôt que fichier par fichier).
+
+**Backend — Node.js App cPanel dédiée** : même procédure que l'étape 2, avec
+ses propres variables d'environnement :
+- `DB_HOST`/`DB_USER`/`DB_PASSWORD`/`DB_NAME` → la base staging ci-dessus
+- `SESSION_SECRET` → une **nouvelle valeur générée**, jamais celle de prod
+- `CLIENT_ORIGIN=https://staging.lexora-jeu.fr`
+- `SERVER_ORIGIN=https://staging-api.lexora-jeu.fr`
+- `NODE_ENV=production` (nécessaire pour les cookies secure en HTTPS
+  cross-origin, staging étant dans la même situation que la prod)
+- `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY`/`VAPID_SUBJECT` → réutiliser la
+  paire existante, pas liée à un domaine
+- `SMTP_*`, `SENTRY_DSN`, `GOOGLE_*`, `FACEBOOK_*` → **laissés vides**
+  volontairement (dégradation gracieuse déjà en place dans le code, comme en
+  dev local) : pas de vrais emails envoyés depuis le staging, pas de bruit
+  dans le projet Sentry de prod, boutons OAuth simplement inactifs. Câbler
+  l'OAuth sur staging plus tard reste possible (ajouter une redirect URI
+  staging dans Google Cloud Console / Facebook Developers) mais n'est pas
+  fait par défaut.
+
+**Frontend — build staging** : `.env.staging` committé à la racine
+(`VITE_API_URL=https://staging-api.lexora-jeu.fr`, `VITE_VAPID_PUBLIC_KEY`
+réutilisée, `VITE_SENTRY_DSN` volontairement omis). Chargé automatiquement
+par `vite build --mode staging` (script `npm run build:staging`), sans
+toucher à `.env.production`.
+
+**Déploiement continu staging** : workflow séparé
+`.github/workflows/deploy-staging.yml`, déclenchement manuel
+(`gh workflow run deploy-staging.yml` ou bouton "Run workflow" sur "Deploy
+to staging" dans l'onglet Actions), même runner auto-hébergé à démarrer
+avant (voir plus haut), mêmes secrets SSH que la prod (même serveur, juste
+des dossiers de destination différents — `~/staging.lexora-jeu.fr` et
+`~/staging.lexora.api`). Délibérément un fichier séparé de `deploy.yml`
+plutôt qu'un paramètre `environment` sur un menu déroulant : ça rend
+impossible de déployer en prod par erreur en se trompant de sélection.
+
+**Ce que le pipeline staging ne fait pas** : identique à la prod, aucune
+migration de base de données automatique.

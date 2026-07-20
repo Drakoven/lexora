@@ -1,0 +1,64 @@
+name: Deploy to staging
+
+# Sibling de deploy.yml, délibérément gardé comme fichier séparé plutôt que
+# paramétré par un input environment (un menu déroulant mal sélectionné
+# pourrait déployer en prod par erreur — voir DEPLOY.md). Même serveur, même
+# clé SSH, seuls les chemins de destination et le mode Vite changent. Si tu
+# changes la logique ici, vérifie si deploy.yml a besoin du même changement.
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add Git Bash to PATH
+        shell: powershell
+        run: |
+          "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # --mode staging charge .env.staging au lieu de .env.production —
+      # le -- est nécessaire pour que le flag atteigne vite build et pas npm.
+      - name: Build frontend
+        run: |
+          npm install
+          npm run build -- --mode staging
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend (dist/ -> ~/staging.lexora-jeu.fr)
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "find ~/staging.lexora-jeu.fr -mindepth 1 -delete"
+          tar -C dist -czf - . | ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "tar -xzf - -C ~/staging.lexora-jeu.fr"
+
+      - name: Deploy backend (server/ -> ~/staging.lexora.api)
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "find ~/staging.lexora.api -mindepth 1 -maxdepth 1 ! -name node_modules ! -name .env -exec rm -rf {} +"
+          tar -C server --exclude=node_modules --exclude=.env -czf - . | \
+            ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "tar -xzf - -C ~/staging.lexora.api"
+
+      - name: Install backend dependencies and restart
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            'source ~/nodevenv/staging.lexora.api/24/bin/activate && cd ~/staging.lexora.api && npm install --omit=dev && mkdir -p tmp && touch tmp/restart.txt'

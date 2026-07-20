@@ -6,6 +6,12 @@ name: Deploy to production
 # port 22 timeout côté runner hébergé), mais accepte celles venant de l'IP
 # habituelle de l'utilisateur. Déclenchement toujours manuel — l'utilisateur
 # doit démarrer le runner (run.cmd) avant de lancer ce workflow.
+#
+# Un sibling deploy-staging.yml existe pour l'environnement de staging,
+# délibérément gardé comme fichier séparé plutôt que paramétré par un input
+# (évite qu'une erreur de sélection dans un menu déroulant déploie en prod
+# par erreur — voir DEPLOY.md). Si tu changes la logique ici, vérifie si
+# deploy-staging.yml a besoin du même changement.
 on:
   workflow_dispatch:
 
