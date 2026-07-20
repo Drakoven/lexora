@@ -18,6 +18,29 @@
   color: var(--color-text);
 }
 
+.online-game-elo-change {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--color-text-muted);
+}
+
+.online-game-elo-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary-text);
+}
+
+.online-game-elo-delta {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.online-game-elo-up { color: var(--color-success); }
+.online-game-elo-down { color: var(--color-error); }
+.online-game-elo-flat { color: var(--color-text-muted); }
+
 .online-game-share-button {
   border: none;
   border-radius: 10px;

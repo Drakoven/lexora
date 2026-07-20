@@ -14,6 +14,44 @@ import { shareOnFacebook } from "../../social/facebookShare.js";
 
 const REACTIONS = ["👍", "😂", "😮", "😢", "🔥", "🤔"];
 
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function EloChangeAnimation({ before, after }) {
+  const [displayed, setDisplayed] = useState(() => (prefersReducedMotion() ? after : before));
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    let raf;
+    const duration = 1200;
+    const start = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayed(Math.round(before + (after - before) * eased));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    }
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [before, after]);
+
+  const delta = after - before;
+  const deltaText = delta > 0 ? `+${delta}` : `${delta}`;
+  const deltaClass =
+    delta > 0 ? "online-game-elo-up" : delta < 0 ? "online-game-elo-down" : "online-game-elo-flat";
+
+  return (
+    <p className="online-game-elo-change">
+      Classement : <span className="online-game-elo-value">{displayed}</span>
+      <span className={`online-game-elo-delta ${deltaClass}`}>{deltaText}</span>
+    </p>
+  );
+}
+
 function availableRackTiles(rack, placements) {
   const remaining = [...rack];
   for (const p of placements) {
@@ -275,6 +313,9 @@ function OnlineGame() {
             {game.players[0]?.username} : {game.scores[0]} pts — {game.players[1]?.username} : {game.scores[1]} pts
           </p>
           <p>{resultText}</p>
+          {game.eloChange && (
+            <EloChangeAnimation before={game.eloChange.before} after={game.eloChange.after} />
+          )}
           <button
             type="button"
             className="online-game-share-button"

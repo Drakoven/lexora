@@ -4,6 +4,7 @@ import { validateMove as runValidateMove } from "./scoring.js";
 import { createBag, drawTiles, RACK_SIZE, LETTER_VALUES } from "./letters.js";
 import { createEmptyBoard } from "./board.js";
 import { applyRankedResult } from "../ranking/rankingService.js";
+import { getRatingChangeForGame } from "../ranking/rankingRepository.js";
 import { recordGameResult } from "../stats/statsService.js";
 import { getBotUserId } from "./botUser.js";
 import { generateMoves } from "./moveGenerator.js";
@@ -112,11 +113,16 @@ async function checkTurnExpiry(game) {
   return current;
 }
 
-function personalize(game, userId) {
+async function personalize(game, userId) {
   const isPlayer1 = game.player1Id === userId;
   const yourRack = isPlayer1 ? game.rack1 : game.rack2;
   const opponentRack = isPlayer1 ? game.rack2 : game.rack1;
   const yourPlayerIndex = isPlayer1 ? 0 : 1;
+
+  const eloChange =
+    game.status === "finished" && game.matchType === "random"
+      ? await getRatingChangeForGame(userId, game.id)
+      : null;
 
   return {
     code: game.code,
@@ -142,6 +148,7 @@ function personalize(game, userId) {
     winner: game.winner,
     matchType: game.matchType,
     invitedUser: game.invitedUser,
+    eloChange,
   };
 }
 
@@ -178,7 +185,7 @@ export async function createGame(userId, matchType = "code", invitedUserId = nul
     matchType,
     invitedUserId,
   });
-  return personalize(game, userId);
+  return await personalize(game, userId);
 }
 
 const BOT_DIFFICULTIES = ["easy", "medium", "hard"];
@@ -205,7 +212,7 @@ export async function createBotGame(userId, difficulty) {
     botDifficulty,
   });
   const started = await startGame(game, botUserId);
-  return personalize(started, userId);
+  return await personalize(started, userId);
 }
 
 export async function inviteFriend(userId, friendUserId) {
@@ -230,7 +237,7 @@ export async function joinGame(code, userId) {
   }
 
   const saved = await startGame(game, userId);
-  return { game: personalize(saved, userId) };
+  return { game: await personalize(saved, userId) };
 }
 
 export async function findOrCreateRandomMatch(userId) {
@@ -238,7 +245,7 @@ export async function findOrCreateRandomMatch(userId) {
 
   if (waiting) {
     const saved = await startGame(waiting, userId);
-    return { game: personalize(saved, userId), matched: true };
+    return { game: await personalize(saved, userId), matched: true };
   }
 
   const created = await createGame(userId, "random");
@@ -261,7 +268,7 @@ export async function getPersonalizedGame(code, userId) {
   if (game.player1Id !== userId && game.player2Id !== userId) return { error: "Tu ne fais pas partie de cette partie." };
 
   game = await checkTurnExpiry(game);
-  return { game: personalize(game, userId) };
+  return { game: await personalize(game, userId) };
 }
 
 export async function getMovesForGame(code, userId) {
@@ -409,12 +416,12 @@ export async function submitMove(code, userId, placements) {
   const gameOver = game.bag.length === 0 && game[rackKey].length === 0;
   if (gameOver) {
     const finished = await finishGame(game, yourPlayerIndex);
-    return { game: personalize(finished, userId) };
+    return { game: await personalize(finished, userId) };
   }
 
   switchTurn(game);
   const saved = await repo.saveGame(game);
-  return { game: personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
+  return { game: await personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
 }
 
 export async function exchangeTiles(code, userId, tiles) {
@@ -448,12 +455,12 @@ export async function exchangeTiles(code, userId, tiles) {
   game.consecutivePasses += 1;
   if (game.consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
     const finished = await finishGame(game, null);
-    return { game: personalize(finished, userId) };
+    return { game: await personalize(finished, userId) };
   }
 
   switchTurn(game);
   const saved = await repo.saveGame(game);
-  return { game: personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
+  return { game: await personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
 }
 
 export async function passTurn(code, userId) {
@@ -471,12 +478,12 @@ export async function passTurn(code, userId) {
   game.consecutivePasses += 1;
   if (game.consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
     const finished = await finishGame(game, null);
-    return { game: personalize(finished, userId) };
+    return { game: await personalize(finished, userId) };
   }
 
   switchTurn(game);
   const saved = await repo.saveGame(game);
-  return { game: personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
+  return { game: await personalize(saved, userId), nextTurnUserId: currentTurnUserId(saved) };
 }
 
 export async function claimVictory(code, userId) {
@@ -493,5 +500,5 @@ export async function claimVictory(code, userId) {
   if (!overdue) return { error: "Le tour de ton adversaire n'est pas encore en retard." };
 
   const finished = await finishGame(game, yourPlayerIndex);
-  return { game: personalize(finished, userId) };
+  return { game: await personalize(finished, userId) };
 }
