@@ -1,5 +1,5 @@
 -- Fichier combiné pour un premier déploiement (import unique via phpMyAdmin).
--- Concatène schema.sql + 002 à 009 dans l'ordre, sans CREATE DATABASE/USE
+-- Concatène schema.sql + 002 à 016 dans l'ordre, sans CREATE DATABASE/USE
 -- (la base est déjà créée et sélectionnée côté hébergeur).
 
 CREATE TABLE IF NOT EXISTS users (
@@ -85,3 +85,44 @@ CREATE TABLE game_moves (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (game_id) REFERENCES games(id)
 );
+
+ALTER TABLE users
+  ADD COLUMN reset_token_hash VARCHAR(255) NULL,
+  ADD COLUMN reset_token_expires_at DATETIME NULL;
+
+ALTER TABLE users
+  ADD COLUMN email_verified_at DATETIME NULL,
+  ADD COLUMN email_verify_token_hash VARCHAR(255) NULL,
+  ADD COLUMN email_verify_token_expires_at DATETIME NULL;
+
+ALTER TABLE users
+  ADD COLUMN google_id VARCHAR(255) NULL UNIQUE,
+  ADD COLUMN facebook_id VARCHAR(255) NULL UNIQUE,
+  MODIFY COLUMN password_hash VARCHAR(255) NULL;
+
+CREATE TABLE push_subscriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  endpoint VARCHAR(500) NOT NULL UNIQUE,
+  p256dh VARCHAR(255) NOT NULL,
+  auth VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rating_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  game_id INT NULL,
+  rating INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE SET NULL,
+  INDEX idx_user_created (user_id, created_at)
+);
+
+ALTER TABLE games
+  MODIFY COLUMN match_type ENUM('code','random','friend','bot') NOT NULL DEFAULT 'code';
+
+ALTER TABLE games
+  ADD COLUMN bot_difficulty ENUM('easy','medium','hard') NULL;
