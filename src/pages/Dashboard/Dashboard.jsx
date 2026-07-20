@@ -1,16 +1,50 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 
 import "./Dashboard.css";
 import AppLayout from "../../components/AppLayout/AppLayout.jsx";
 import Button from "../../components/Button/Button.jsx";
 
+const WELCOME_DISMISSED_KEY = "lexora_dashboard_welcome_dismissed";
+
 function Dashboard() {
   const navigate = useNavigate();
+  const [showWelcome, setShowWelcome] = useState(
+    () => localStorage.getItem(WELCOME_DISMISSED_KEY) !== "1"
+  );
+
+  function dismissWelcome() {
+    localStorage.setItem(WELCOME_DISMISSED_KEY, "1");
+    setShowWelcome(false);
+  }
 
   return (
     <AppLayout>
       <div className="dashboard-page">
         <h1>Jouer</h1>
+
+        {showWelcome && (
+          <section className="dashboard-welcome-card">
+            <button
+              className="dashboard-welcome-dismiss"
+              onClick={dismissWelcome}
+              aria-label="Fermer"
+            >
+              ×
+            </button>
+            <h2>Nouveau sur Lexora ?</h2>
+            <p>
+              Découvre les règles du jeu, ou entraîne-toi directement contre notre bot avant
+              d'affronter d'autres joueurs.
+            </p>
+            <div className="dashboard-welcome-actions">
+              <Link to="/comment-jouer" className="dashboard-welcome-link">
+                Voir les règles
+              </Link>
+              <Button text="Jouer contre le bot" onClick={() => navigate("/play/online")} />
+            </div>
+          </section>
+        )}
 
         <div className="dashboard-play-options">
           <section className="dashboard-play-card">

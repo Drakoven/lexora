@@ -29,3 +29,48 @@
 .dashboard-play-card p {
   margin: 0;
 }
+
+.dashboard-welcome-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  background-color: var(--color-background-soft);
+  border: 1px solid var(--color-primary-text);
+  max-width: 640px;
+}
+
+.dashboard-welcome-card h2 {
+  margin: 0;
+}
+
+.dashboard-welcome-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.dashboard-welcome-dismiss {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
+.dashboard-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dashboard-welcome-link {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+}

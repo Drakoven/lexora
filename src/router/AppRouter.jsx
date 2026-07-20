@@ -9,6 +9,7 @@ import VerifyEmail from "../pages/VerifyEmail/VerifyEmail";
 import MentionsLegales from "../pages/MentionsLegales/MentionsLegales";
 import PolitiqueConfidentialite from "../pages/PolitiqueConfidentialite/PolitiqueConfidentialite";
 import ConditionsUtilisation from "../pages/ConditionsUtilisation/ConditionsUtilisation";
+import CommentJouer from "../pages/CommentJouer/CommentJouer";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Game from "../pages/Game/Game";
 import Profile from "../pages/Profile/Profile";
@@ -33,6 +34,7 @@ function AppRouter() {
         <Route path="/mentions-legales" element={<MentionsLegales />} />
         <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialite />} />
         <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
+        <Route path="/comment-jouer" element={<CommentJouer />} />
         <Route
           path="/dashboard"
           element={

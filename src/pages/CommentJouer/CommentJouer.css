@@ -1,0 +1,88 @@
+.howto-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  line-height: 1.6;
+}
+
+.howto-page h1 {
+  margin-bottom: 24px;
+}
+
+.howto-page section {
+  margin-bottom: 28px;
+}
+
+.howto-page h2 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+  color: var(--color-primary-text);
+}
+
+.howto-page p {
+  margin: 0 0 8px;
+  color: var(--color-text-muted);
+}
+
+.howto-page ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--color-text-muted);
+}
+
+.howto-page li {
+  margin-bottom: 6px;
+}
+
+.howto-bonus-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.howto-bonus-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 2px 6px;
+  margin-right: 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+.howto-bonus-dl { background-color: #4a90d9; }
+.howto-bonus-tl { background-color: #2f6fb3; }
+.howto-bonus-dw { background-color: #e08a8a; }
+.howto-bonus-tw { background-color: #c0392b; }
+
+.howto-letters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 8px;
+}
+
+.howto-letter-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background-color: var(--color-background-soft);
+  color: var(--color-primary-text);
+  font-weight: 700;
+}
+
+.howto-letter-tile sub {
+  position: absolute;
+  bottom: 3px;
+  right: 5px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}

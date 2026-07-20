@@ -51,6 +51,7 @@ function Home() {
       </main>
 
       <footer className="home-footer">
+        <Link to="/comment-jouer">Comment jouer ?</Link>
         <Link to="/mentions-legales">Mentions légales</Link>
         <Link to="/politique-de-confidentialite">Politique de confidentialité</Link>
         <Link to="/conditions-utilisation">CGU</Link>

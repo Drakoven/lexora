@@ -32,6 +32,14 @@ function AppLayout({ children }) {
                 Tableau de bord
               </NavLink>
               <NavLink
+                to="/comment-jouer"
+                className={({ isActive }) =>
+                  isActive ? "app-nav-link is-active" : "app-nav-link"
+                }
+              >
+                Comment jouer ?
+              </NavLink>
+              <NavLink
                 to="/friends"
                 className={({ isActive }) =>
                   isActive ? "app-nav-link is-active" : "app-nav-link"
