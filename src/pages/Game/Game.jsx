@@ -41,6 +41,7 @@ function initialState() {
     pendingBlank: null,
     message: "",
     winnerIndex: null,
+    isValidating: false,
   };
 }
 
@@ -125,8 +126,12 @@ function reducer(state, action) {
       };
     }
 
+    case "VALIDATE_START": {
+      return { ...state, isValidating: true };
+    }
+
     case "MOVE_REJECTED": {
-      return { ...state, placements: [], selectedTileId: null, message: action.reason };
+      return { ...state, isValidating: false, placements: [], selectedTileId: null, message: action.reason };
     }
 
     case "MOVE_ACCEPTED": {
@@ -159,6 +164,7 @@ function reducer(state, action) {
         selectedTileId: null,
         consecutivePasses: 0,
         turnSecondsLeft: TURN_SECONDS,
+        isValidating: false,
         message: `${state.playerNames[state.currentPlayer]} forme ${words.join(", ")} pour ${score} points.`,
       };
 
@@ -217,6 +223,11 @@ function reducer(state, action) {
     }
 
     case "TICK_TIMER": {
+      // Un coup en cours de validation (requête serveur en vol) ne doit jamais
+      // se faire écraser par un passage automatique déclenché entre-temps —
+      // sinon la réponse du serveur arrive après coup sur un état déjà remis
+      // à zéro (le mot posé "disparaît" et se transforme en passe).
+      if (state.isValidating) return state;
       if (state.turnSecondsLeft <= 1) {
         return reducer(state, { type: "PASS_TURN" });
       }
@@ -268,6 +279,7 @@ function Game() {
   }, [state.phase]);
 
   async function handleValidate() {
+    dispatch({ type: "VALIDATE_START" });
     const result = await gameApi.validateMove(state.board, state.placements);
     if (result.accepted) {
       dispatch({ type: "MOVE_ACCEPTED", words: result.words, score: result.score });
@@ -389,10 +401,15 @@ function Game() {
         <div className="game-actions">
           {state.mode === "place" ? (
             <>
-              <Button text="Valider" disabled={!canValidate} onClick={handleValidate} />
+              <Button
+                text={state.isValidating ? "Validation..." : "Valider"}
+                disabled={!canValidate || state.isValidating}
+                onClick={handleValidate}
+              />
               <button
                 type="button"
                 className="game-secondary-action"
+                disabled={state.isValidating}
                 onClick={() => dispatch({ type: "SET_MODE", mode: "exchange" })}
               >
                 Échanger des lettres
@@ -400,6 +417,7 @@ function Game() {
               <button
                 type="button"
                 className="game-secondary-action"
+                disabled={state.isValidating}
                 onClick={() => dispatch({ type: "PASS_TURN" })}
               >
                 Passer

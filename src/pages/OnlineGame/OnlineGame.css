@@ -284,6 +284,14 @@
   font-size: 1rem;
 }
 
+/* Le fond du <select> ne s'applique pas à la popup native des <option> dans
+   la plupart des navigateurs — sans ce style explicite, le texte clair sur
+   le fond blanc par défaut de la popup devient invisible. */
+.blank-picker select option {
+  background-color: var(--color-background-soft);
+  color: var(--color-text);
+}
+
 .blank-picker-actions {
   display: flex;
   gap: 12px;

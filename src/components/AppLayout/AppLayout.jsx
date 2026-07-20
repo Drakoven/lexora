@@ -77,9 +77,19 @@ function AppLayout({ children }) {
               </button>
             </>
           ) : (
-            <NavLink to="/login" className="app-nav-link">
-              Se connecter
-            </NavLink>
+            <>
+              <NavLink
+                to="/comment-jouer"
+                className={({ isActive }) =>
+                  isActive ? "app-nav-link is-active" : "app-nav-link"
+                }
+              >
+                Comment jouer ?
+              </NavLink>
+              <NavLink to="/login" className="app-nav-link">
+                Se connecter
+              </NavLink>
+            </>
           )}
         </nav>
       </header>
