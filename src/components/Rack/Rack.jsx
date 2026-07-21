@@ -6,7 +6,7 @@ function Rack({ tiles, selectedTileId, exchangeSelection, mode, onTileClick }) {
   return (
     <div className="rack">
       {tiles.map((tile) => {
-        const isSelected = mode === "place" ? tile.id === selectedTileId : exchangeSelection.has(tile.id);
+        const isSelected = mode === "exchange" ? exchangeSelection.has(tile.id) : tile.id === selectedTileId;
 
         const label = tile.isBlank
           ? `Joker${isSelected ? ", sélectionné" : ""}`

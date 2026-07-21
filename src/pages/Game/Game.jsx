@@ -68,6 +68,27 @@ function reducer(state, action) {
         else next.add(action.tileId);
         return { ...state, exchangeSelection: next };
       }
+
+      if (state.mode === "reorder") {
+        if (state.selectedTileId === null) {
+          return { ...state, selectedTileId: action.tileId };
+        }
+        if (state.selectedTileId === action.tileId) {
+          return { ...state, selectedTileId: null };
+        }
+        // Échange la position des deux tuiles dans le chevalet — la valeur
+        // des lettres ne bouge pas, seul l'ordre d'affichage change, pour
+        // aider à "voir" des mots avant de poser.
+        const rack = [...state.racks[state.currentPlayer]];
+        const i = rack.findIndex((t) => t.id === state.selectedTileId);
+        const j = rack.findIndex((t) => t.id === action.tileId);
+        if (i === -1 || j === -1) return { ...state, selectedTileId: null };
+        [rack[i], rack[j]] = [rack[j], rack[i]];
+        const racks = [...state.racks];
+        racks[state.currentPlayer] = rack;
+        return { ...state, racks, selectedTileId: null };
+      }
+
       return {
         ...state,
         selectedTileId: state.selectedTileId === action.tileId ? null : action.tileId,
@@ -400,6 +421,7 @@ function Game() {
           board={state.board}
           placements={state.placements}
           onCellClick={(row, col) => {
+            if (state.mode !== "place") return;
             if (state.placements.some((p) => p.row === row && p.col === col)) {
               dispatch({ type: "PICK_UP_TILE", row, col });
             } else {
@@ -416,14 +438,26 @@ function Game() {
           onTileClick={(tileId) => dispatch({ type: "SELECT_RACK_TILE", tileId })}
         />
 
+        {state.mode === "reorder" && (
+          <p className="game-message">Clique deux lettres pour les échanger de place.</p>
+        )}
+
         <div className="game-actions">
-          {state.mode === "place" ? (
+          {state.mode === "place" && (
             <>
               <Button
                 text={state.isValidating ? "Validation..." : "Valider"}
                 disabled={!canValidate || state.isValidating}
                 onClick={handleValidate}
               />
+              <button
+                type="button"
+                className="game-secondary-action"
+                disabled={state.isValidating}
+                onClick={() => dispatch({ type: "SET_MODE", mode: "reorder" })}
+              >
+                Réorganiser
+              </button>
               <button
                 type="button"
                 className="game-secondary-action"
@@ -441,7 +475,8 @@ function Game() {
                 Passer
               </button>
             </>
-          ) : (
+          )}
+          {state.mode === "exchange" && (
             <>
               <Button
                 text="Confirmer l'échange"
@@ -456,6 +491,15 @@ function Game() {
                 Annuler
               </button>
             </>
+          )}
+          {state.mode === "reorder" && (
+            <button
+              type="button"
+              className="game-secondary-action"
+              onClick={() => dispatch({ type: "SET_MODE", mode: "place" })}
+            >
+              Terminé
+            </button>
           )}
         </div>
 
