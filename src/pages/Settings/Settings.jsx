@@ -3,11 +3,19 @@ import { useEffect, useState } from "react";
 import AppLayout from "../../components/AppLayout/AppLayout.jsx";
 import Button from "../../components/Button/Button.jsx";
 import * as webPush from "../../push/webPush.js";
+import { isSoundEnabled, setSoundEnabled } from "../../audio/sounds.js";
 
 function Settings() {
   const [state, setState] = useState("loading");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
+
+  function handleToggleSound(e) {
+    const enabled = e.target.checked;
+    setSoundEnabled(enabled);
+    setSoundEnabledState(enabled);
+  }
 
   useEffect(() => {
     webPush.getSubscriptionState().then(setState);
@@ -78,6 +86,18 @@ function Settings() {
             Sur iPhone/iPad, installe d'abord Lexora sur l'écran d'accueil (Partager →
             "Sur l'écran d'accueil") pour que les notifications fonctionnent.
           </p>
+        </section>
+
+        <section className="settings-section">
+          <h2>Son</h2>
+          <p className="settings-section-description">
+            Le petit son joué quand tu sélectionnes une lettre ou poses une tuile sur le plateau.
+          </p>
+
+          <label className="settings-toggle">
+            <input type="checkbox" checked={soundEnabled} onChange={handleToggleSound} />
+            Activer les effets sonores
+          </label>
         </section>
       </div>
     </AppLayout>

@@ -45,3 +45,16 @@
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}

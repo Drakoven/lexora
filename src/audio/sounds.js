@@ -1,4 +1,14 @@
+const SOUND_ENABLED_KEY = "lexora_sound_enabled";
+
 let audioContext = null;
+
+export function isSoundEnabled() {
+  return localStorage.getItem(SOUND_ENABLED_KEY) !== "0";
+}
+
+export function setSoundEnabled(enabled) {
+  localStorage.setItem(SOUND_ENABLED_KEY, enabled ? "1" : "0");
+}
 
 function getContext() {
   if (!audioContext) {
@@ -10,6 +20,8 @@ function getContext() {
 }
 
 function playTone({ frequency, duration, type, gain }) {
+  if (!isSoundEnabled()) return;
+
   const ctx = getContext();
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
