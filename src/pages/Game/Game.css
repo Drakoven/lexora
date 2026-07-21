@@ -22,6 +22,11 @@
   color: var(--color-text);
 }
 
+.game-message.game-message-error {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
 .online-game-share-button {
   border: none;
   border-radius: 10px;

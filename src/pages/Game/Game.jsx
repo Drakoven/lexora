@@ -40,6 +40,7 @@ function initialState() {
     turnSecondsLeft: TURN_SECONDS,
     pendingBlank: null,
     message: "",
+    isMessageError: false,
     winnerIndex: null,
     isValidating: false,
   };
@@ -131,7 +132,14 @@ function reducer(state, action) {
     }
 
     case "MOVE_REJECTED": {
-      return { ...state, isValidating: false, placements: [], selectedTileId: null, message: action.reason };
+      return {
+        ...state,
+        isValidating: false,
+        placements: [],
+        selectedTileId: null,
+        message: action.reason,
+        isMessageError: true,
+      };
     }
 
     case "MOVE_ACCEPTED": {
@@ -166,6 +174,7 @@ function reducer(state, action) {
         turnSecondsLeft: TURN_SECONDS,
         isValidating: false,
         message: `${state.playerNames[state.currentPlayer]} forme ${words.join(", ")} pour ${score} points.`,
+        isMessageError: false,
       };
 
       if (gameOver) {
@@ -195,6 +204,7 @@ function reducer(state, action) {
         consecutivePasses,
         turnSecondsLeft: TURN_SECONDS,
         message: `${state.playerNames[state.currentPlayer]} échange ${toExchange.length} lettre(s).`,
+        isMessageError: false,
       };
 
       if (consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
@@ -213,6 +223,7 @@ function reducer(state, action) {
         consecutivePasses,
         turnSecondsLeft: TURN_SECONDS,
         message: `${state.playerNames[state.currentPlayer]} passe son tour.`,
+        isMessageError: false,
       };
 
       if (consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
@@ -376,7 +387,14 @@ function Game() {
           <div className="game-timer">{state.turnSecondsLeft}s</div>
         </div>
 
-        {state.message && <p className="game-message">{state.message}</p>}
+        {state.message && (
+          <p
+            className={state.isMessageError ? "game-message game-message-error" : "game-message"}
+            role={state.isMessageError ? "alert" : undefined}
+          >
+            {state.message}
+          </p>
+        )}
 
         <Board
           board={state.board}
