@@ -1,0 +1,5 @@
+# Force LF regardless of the checking-out machine's core.autocrlf. Sans ça,
+# le runner de déploiement (Windows) checkoutait server/src/data/dictionary/words.txt
+# en CRLF, ce qui cassait toute la validation du dictionnaire en production
+# (chaque mot du Set portait un "\r" final invisible).
+* text=auto eol=lf
