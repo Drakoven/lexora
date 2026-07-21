@@ -11,8 +11,10 @@ import { isStructurallyValid } from "../../game/board.js";
 import { socket } from "../../socket.js";
 import * as gamesApi from "../../api/games.js";
 import { shareOnFacebook } from "../../social/facebookShare.js";
+import { useOrderedRack } from "../../hooks/useOrderedRack.js";
 
 const REACTIONS = ["👍", "😂", "😮", "😢", "🔥", "🤔"];
+const EMPTY_RACK = [];
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -58,7 +60,7 @@ function availableRackTiles(rack, placements) {
     const idx = remaining.findIndex((t) => (p.isBlank ? t.isBlank : !t.isBlank && t.letter === p.letter));
     if (idx !== -1) remaining.splice(idx, 1);
   }
-  return remaining.map((tile, i) => ({ ...tile, id: i }));
+  return remaining;
 }
 
 function describeMove(move, playerName) {
@@ -157,9 +159,11 @@ function OnlineGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
+  const [orderedRack, swapRackTiles] = useOrderedRack(game ? game.yourRack : EMPTY_RACK);
+
   const availableTiles = useMemo(
-    () => (game ? availableRackTiles(game.yourRack, placements) : []),
-    [game, placements]
+    () => availableRackTiles(orderedRack, placements),
+    [orderedRack, placements]
   );
 
   const placementsKey = useMemo(
@@ -339,6 +343,7 @@ function OnlineGame() {
   const canValidate = placements.length > 0 && isStructurallyValid(game.board, placements);
 
   function handleCellClick(row, col) {
+    if (mode !== "place") return;
     if (!game.isYourTurn) return;
     if (placements.some((p) => p.row === row && p.col === col)) {
       setPlacements(placements.filter((p) => !(p.row === row && p.col === col)));
@@ -364,6 +369,15 @@ function OnlineGame() {
       if (next.has(tileId)) next.delete(tileId);
       else next.add(tileId);
       setExchangeSelection(next);
+    } else if (mode === "reorder") {
+      if (selectedTileId === null) {
+        setSelectedTileId(tileId);
+      } else if (selectedTileId === tileId) {
+        setSelectedTileId(null);
+      } else {
+        swapRackTiles(selectedTileId, tileId);
+        setSelectedTileId(null);
+      }
     } else {
       setSelectedTileId(selectedTileId === tileId ? null : tileId);
     }
@@ -498,8 +512,12 @@ function OnlineGame() {
           </p>
         )}
 
+        {mode === "reorder" && (
+          <p className="game-message">Clique deux lettres pour les échanger de place.</p>
+        )}
+
         <div className="game-actions">
-          {mode === "place" ? (
+          {mode === "place" && (
             <>
               <Button text="Valider" disabled={!canValidate || !game.isYourTurn} onClick={handleValidate} />
               <button
@@ -513,13 +531,24 @@ function OnlineGame() {
               <button
                 type="button"
                 className="game-secondary-action"
+                onClick={() => {
+                  setSelectedTileId(null);
+                  setMode("reorder");
+                }}
+              >
+                Réorganiser
+              </button>
+              <button
+                type="button"
+                className="game-secondary-action"
                 disabled={!game.isYourTurn}
                 onClick={handlePass}
               >
                 Passer
               </button>
             </>
-          ) : (
+          )}
+          {mode === "exchange" && (
             <>
               <Button
                 text="Confirmer l'échange"
@@ -530,6 +559,18 @@ function OnlineGame() {
                 Annuler
               </button>
             </>
+          )}
+          {mode === "reorder" && (
+            <button
+              type="button"
+              className="game-secondary-action"
+              onClick={() => {
+                setSelectedTileId(null);
+                setMode("place");
+              }}
+            >
+              Terminé
+            </button>
           )}
         </div>
 
