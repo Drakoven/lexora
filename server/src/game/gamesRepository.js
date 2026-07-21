@@ -124,10 +124,15 @@ export async function deleteGame(id) {
   await pool.query("DELETE FROM games WHERE id = ?", [id]);
 }
 
+// Les parties terminées ne sont volontairement pas incluses : cette liste
+// alimente "Tes parties en cours" dans le lobby, pas un historique complet
+// (qui grossirait sans fin au fil des parties jouées). Le score final reste
+// visible sur l'écran de fin de partie lui-même au moment où elle se termine.
 export async function getGamesForUser(userId) {
   const [rows] = await pool.query(
     `${SELECT_WITH_PLAYERS}
-     WHERE g.player1_id = ? OR g.player2_id = ? OR (g.invited_user_id = ? AND g.status = 'waiting')
+     WHERE (g.player1_id = ? OR g.player2_id = ? OR (g.invited_user_id = ? AND g.status = 'waiting'))
+       AND g.status != 'finished'
      ORDER BY g.updated_at DESC`,
     [userId, userId, userId]
   );
