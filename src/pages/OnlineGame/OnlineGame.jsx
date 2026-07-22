@@ -159,7 +159,7 @@ function OnlineGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
-  const [orderedRack, swapRackTiles] = useOrderedRack(game ? game.yourRack : EMPTY_RACK);
+  const [orderedRack, swapRackTiles, reorderRackTiles] = useOrderedRack(game ? game.yourRack : EMPTY_RACK);
 
   const availableTiles = useMemo(
     () => availableRackTiles(orderedRack, placements),
@@ -418,6 +418,27 @@ function OnlineGame() {
     setExchangeSelection(new Set());
   }
 
+  async function handleRedrawRack() {
+    setError("");
+    // Repart d'un chevalet "propre" : si des tuiles étaient en attente sur le
+    // plateau, on les abandonne plutôt que de n'échanger qu'une partie du
+    // chevalet (celles restées visibles sur le plateau ne seraient plus
+    // cohérentes avec les nouvelles lettres tirées).
+    setPlacements([]);
+    setSelectedTileId(null);
+    const tiles = orderedRack.map(({ letter, isBlank }) => ({ letter, isBlank }));
+    try {
+      const result = await gamesApi.exchangeTiles(code, tiles);
+      if (result.accepted) {
+        setGame(result.game);
+      } else {
+        setError(result.reason);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function handlePass() {
     setError("");
     try {
@@ -504,6 +525,7 @@ function OnlineGame() {
           exchangeSelection={exchangeSelection}
           mode={mode}
           onTileClick={handleTileClick}
+          onReorder={reorderRackTiles}
         />
 
         {mode === "place" && displayedScorePreview !== null && (
@@ -533,10 +555,19 @@ function OnlineGame() {
                 className="game-secondary-action"
                 onClick={() => {
                   setSelectedTileId(null);
+                  setPlacements([]);
                   setMode("reorder");
                 }}
               >
                 Réorganiser
+              </button>
+              <button
+                type="button"
+                className="game-secondary-action"
+                disabled={!game.isYourTurn}
+                onClick={handleRedrawRack}
+              >
+                Refaire mon tirage
               </button>
               <button
                 type="button"

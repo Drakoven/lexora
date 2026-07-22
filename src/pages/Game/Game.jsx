@@ -95,6 +95,16 @@ function reducer(state, action) {
       };
     }
 
+    case "REORDER_RACK": {
+      const rack = state.racks[state.currentPlayer];
+      const byId = new Map(rack.map((t) => [t.id, t]));
+      const reordered = action.order.map((id) => byId.get(id)).filter(Boolean);
+      if (reordered.length !== rack.length) return state;
+      const racks = [...state.racks];
+      racks[state.currentPlayer] = reordered;
+      return { ...state, racks };
+    }
+
     case "PLACE_TILE": {
       const { row, col } = action;
       if (state.board[row][col]) return state;
@@ -207,8 +217,11 @@ function reducer(state, action) {
 
     case "EXCHANGE_TILES": {
       const rack = state.racks[state.currentPlayer];
-      const toExchange = rack.filter((t) => state.exchangeSelection.has(t.id));
-      const keep = rack.filter((t) => !state.exchangeSelection.has(t.id));
+      // action.tileIds permet un échange complet en un clic ("Refaire mon
+      // tirage") sans passer par la sélection manuelle du mode "exchange".
+      const idsToExchange = action.tileIds ? new Set(action.tileIds) : state.exchangeSelection;
+      const toExchange = rack.filter((t) => idsToExchange.has(t.id));
+      const keep = rack.filter((t) => !idsToExchange.has(t.id));
       const bagWithReturns = [...state.bag, ...toExchange.map(({ letter, isBlank }) => ({ letter, isBlank }))];
       const { drawn, remaining: bag } = drawTiles(bagWithReturns, toExchange.length);
 
@@ -221,6 +234,12 @@ function reducer(state, action) {
         bag,
         racks,
         mode: "place",
+        // "Refaire mon tirage" dispatche cette action directement depuis le
+        // mode "place" (sans passer par SET_MODE, qui les viderait déjà) —
+        // des tuiles encore en attente sur le plateau référenceraient alors
+        // des tuiles qui n'existent plus dans le chevalet après l'échange.
+        placements: [],
+        selectedTileId: null,
         exchangeSelection: new Set(),
         consecutivePasses,
         turnSecondsLeft: TURN_SECONDS,
@@ -436,6 +455,7 @@ function Game() {
           exchangeSelection={state.exchangeSelection}
           mode={state.mode}
           onTileClick={(tileId) => dispatch({ type: "SELECT_RACK_TILE", tileId })}
+          onReorder={(order) => dispatch({ type: "REORDER_RACK", order })}
         />
 
         {state.mode === "reorder" && (
@@ -465,6 +485,19 @@ function Game() {
                 onClick={() => dispatch({ type: "SET_MODE", mode: "exchange" })}
               >
                 Échanger des lettres
+              </button>
+              <button
+                type="button"
+                className="game-secondary-action"
+                disabled={state.isValidating}
+                onClick={() =>
+                  dispatch({
+                    type: "EXCHANGE_TILES",
+                    tileIds: state.racks[state.currentPlayer].map((t) => t.id),
+                  })
+                }
+              >
+                Refaire mon tirage
               </button>
               <button
                 type="button"

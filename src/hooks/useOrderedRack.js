@@ -45,5 +45,13 @@ export function useOrderedRack(rawTiles) {
     });
   }
 
-  return [ordered, swapTiles];
+  function reorderTiles(newIdOrder) {
+    setOrdered((prev) => {
+      const byId = new Map(prev.map((t) => [t.id, t]));
+      const next = newIdOrder.map((id) => byId.get(id)).filter(Boolean);
+      return next.length === prev.length ? next : prev;
+    });
+  }
+
+  return [ordered, swapTiles, reorderTiles];
 }
