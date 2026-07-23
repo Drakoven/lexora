@@ -8,6 +8,7 @@ import { getRatingChangeForGame } from "../ranking/rankingRepository.js";
 import { recordGameResult } from "../stats/statsService.js";
 import { getBotUserId } from "./botUser.js";
 import { generateMoves } from "./moveGenerator.js";
+import { canAfford } from "./rackUtils.js";
 
 export const TURN_HOURS = 48;
 const TURN_MS = TURN_HOURS * 60 * 60 * 1000;
@@ -15,25 +16,6 @@ const MAX_CONSECUTIVE_PASSES = 4;
 
 function rackValue(rack) {
   return rack.reduce((sum, tile) => sum + (tile.isBlank ? 0 : LETTER_VALUES[tile.letter]), 0);
-}
-
-function canAfford(rack, tiles) {
-  const letterCounts = {};
-  let blankCount = 0;
-  for (const tile of rack) {
-    if (tile.isBlank) blankCount++;
-    else letterCounts[tile.letter] = (letterCounts[tile.letter] || 0) + 1;
-  }
-  for (const tile of tiles) {
-    if (tile.isBlank) {
-      if (blankCount <= 0) return false;
-      blankCount--;
-    } else {
-      if (!letterCounts[tile.letter]) return false;
-      letterCounts[tile.letter]--;
-    }
-  }
-  return true;
 }
 
 function removeFromRack(rack, tiles) {

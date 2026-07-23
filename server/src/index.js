@@ -18,6 +18,7 @@ import rankingRoutes from "./routes/ranking.routes.js";
 import badgesRoutes from "./routes/badges.routes.js";
 import pushRoutes from "./routes/push.routes.js";
 import dictionaryRoutes from "./routes/dictionary.routes.js";
+import dailyChallengeRoutes from "./routes/dailyChallenge.routes.js";
 import { registerSocketHandlers } from "./realtime/socket.js";
 import { setIO } from "./realtime/io.js";
 import { getBotUserId } from "./game/botUser.js";
@@ -77,6 +78,7 @@ app.use("/api/ranking", rankingRoutes);
 app.use("/api/badges", badgesRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/dictionary", dictionaryRoutes);
+app.use("/api/daily-challenge", dailyChallengeRoutes);
 
 if (process.env.SENTRY_DSN) {
   Sentry.setupExpressErrorHandler(app);

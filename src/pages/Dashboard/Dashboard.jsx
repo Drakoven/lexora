@@ -48,6 +48,12 @@ function Dashboard() {
 
         <div className="dashboard-play-options">
           <section className="dashboard-play-card">
+            <h2>Défi du jour</h2>
+            <p>Bats le score d'un vrai coup déjà joué sur Lexora. Une tentative par jour.</p>
+            <Button text="Jouer le défi" onClick={() => navigate("/daily-challenge")} />
+          </section>
+
+          <section className="dashboard-play-card">
             <h2>Partie locale</h2>
             <p>Deux joueurs sur le même appareil, à tour de rôle.</p>
             <Button text="Jouer en local" onClick={() => navigate("/game")} />

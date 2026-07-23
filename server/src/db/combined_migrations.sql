@@ -131,3 +131,17 @@ ALTER TABLE users
   ADD COLUMN daily_streak_current INT NOT NULL DEFAULT 0,
   ADD COLUMN daily_streak_best INT NOT NULL DEFAULT 0,
   ADD COLUMN daily_streak_last_date VARCHAR(10) NULL;
+
+CREATE TABLE daily_challenge_attempts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  challenge_date VARCHAR(10) NOT NULL,
+  move_id INT NOT NULL,
+  target_score INT NOT NULL,
+  your_score INT NOT NULL,
+  words JSON NULL,
+  won TINYINT(1) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_user_date (user_id, challenge_date),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

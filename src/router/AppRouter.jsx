@@ -19,6 +19,7 @@ import OnlineGame from "../pages/OnlineGame/OnlineGame";
 import Friends from "../pages/Friends/Friends";
 import Leaderboard from "../pages/Leaderboard/Leaderboard";
 import Badges from "../pages/Badges/Badges";
+import DailyChallenge from "../pages/DailyChallenge/DailyChallenge";
 import RequireAuth from "../components/RequireAuth/RequireAuth";
 
 function AppRouter() {
@@ -81,6 +82,14 @@ function AppRouter() {
           element={
             <RequireAuth>
               <Badges />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/daily-challenge"
+          element={
+            <RequireAuth>
+              <DailyChallenge />
             </RequireAuth>
           }
         />
