@@ -38,3 +38,8 @@ export const gameActionLimiter = limiter({ windowMs: 60 * 1000, max: 30, keyGene
 // changement de placement pendant que le joueur pose ses tuiles — besoin
 // d'une limite bien plus large pour ne jamais gêner une pose normale.
 export const gamePreviewLimiter = limiter({ windowMs: 60 * 1000, max: 120, keyGenerator: byUser });
+
+// Non authentifié (accessible en partie locale/invité) et déclenche des
+// requêtes sortantes vers Wiktionary sur cache miss — limite par IP pour
+// éviter qu'un script ne fasse tourner notre serveur en proxy de scraping.
+export const definitionLimiter = limiter({ windowMs: 60 * 1000, max: 30 });

@@ -6,6 +6,7 @@ import AppLayout from "../../components/AppLayout/AppLayout.jsx";
 import Board from "../../components/Board/Board.jsx";
 import Rack from "../../components/Rack/Rack.jsx";
 import Button from "../../components/Button/Button.jsx";
+import WordDefinition from "../../components/WordDefinition/WordDefinition.jsx";
 import { LETTER_VALUES } from "../../game/letters.js";
 import { isStructurallyValid } from "../../game/board.js";
 import { socket } from "../../socket.js";
@@ -63,10 +64,9 @@ function availableRackTiles(rack, placements) {
   return remaining;
 }
 
+// Les coups "place" sont rendus à part (voir renderHistory) pour pouvoir
+// afficher un WordDefinition cliquable par mot formé.
 function describeMove(move, playerName) {
-  if (move.moveType === "place") {
-    return `${playerName} forme ${move.detail.words.join(", ")} pour ${move.score} points.`;
-  }
   if (move.moveType === "exchange") {
     return `${playerName} échange ${move.detail.tileCount} lettre(s).`;
   }
@@ -473,9 +473,24 @@ function OnlineGame() {
         {showHistory && (
           <ul className="online-game-history-list">
             {moves.length === 0 && <li className="online-game-history-empty">Aucun coup joué pour l'instant.</li>}
-            {moves.map((move, i) => (
-              <li key={i}>{describeMove(move, game.players[move.playerIndex]?.username)}</li>
-            ))}
+            {moves.map((move, i) => {
+              const playerName = game.players[move.playerIndex]?.username;
+              if (move.moveType === "place") {
+                return (
+                  <li key={i}>
+                    {playerName} forme{" "}
+                    {move.detail.words.map((word, wi) => (
+                      <span key={word + wi}>
+                        {wi > 0 && ", "}
+                        <WordDefinition word={word} />
+                      </span>
+                    ))}{" "}
+                    pour {move.score} points.
+                  </li>
+                );
+              }
+              return <li key={i}>{describeMove(move, playerName)}</li>;
+            })}
           </ul>
         )}
       </div>

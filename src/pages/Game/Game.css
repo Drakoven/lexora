@@ -87,6 +87,12 @@
   text-align: center;
 }
 
+.game-word-definitions {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .game-actions {
   display: flex;
   flex-wrap: wrap;

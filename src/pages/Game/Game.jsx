@@ -5,6 +5,7 @@ import AppLayout from "../../components/AppLayout/AppLayout.jsx";
 import Board from "../../components/Board/Board.jsx";
 import Rack from "../../components/Rack/Rack.jsx";
 import Button from "../../components/Button/Button.jsx";
+import WordDefinition from "../../components/WordDefinition/WordDefinition.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { createBag, drawTiles, RACK_SIZE, LETTER_VALUES } from "../../game/letters.js";
 import { createEmptyBoard, isStructurallyValid } from "../../game/board.js";
@@ -41,6 +42,7 @@ function initialState() {
     pendingBlank: null,
     message: "",
     isMessageError: false,
+    lastWords: [],
     winnerIndex: null,
     isValidating: false,
   };
@@ -170,6 +172,7 @@ function reducer(state, action) {
         selectedTileId: null,
         message: action.reason,
         isMessageError: true,
+        lastWords: [],
       };
     }
 
@@ -206,6 +209,7 @@ function reducer(state, action) {
         isValidating: false,
         message: `${state.playerNames[state.currentPlayer]} forme ${words.join(", ")} pour ${score} points.`,
         isMessageError: false,
+        lastWords: words,
       };
 
       if (gameOver) {
@@ -245,6 +249,7 @@ function reducer(state, action) {
         turnSecondsLeft: TURN_SECONDS,
         message: `${state.playerNames[state.currentPlayer]} échange ${toExchange.length} lettre(s).`,
         isMessageError: false,
+        lastWords: [],
       };
 
       if (consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
@@ -264,6 +269,7 @@ function reducer(state, action) {
         turnSecondsLeft: TURN_SECONDS,
         message: `${state.playerNames[state.currentPlayer]} passe son tour.`,
         isMessageError: false,
+        lastWords: [],
       };
 
       if (consecutivePasses >= MAX_CONSECUTIVE_PASSES) {
@@ -434,6 +440,18 @@ function Game() {
           >
             {state.message}
           </p>
+        )}
+
+        {state.lastWords.length > 0 && (
+          <div className="game-word-definitions">
+            Définitions :{" "}
+            {state.lastWords.map((word, i) => (
+              <span key={word + i}>
+                {i > 0 && ", "}
+                <WordDefinition word={word} />
+              </span>
+            ))}
+          </div>
         )}
 
         <Board
