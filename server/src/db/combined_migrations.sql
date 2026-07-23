@@ -126,3 +126,8 @@ ALTER TABLE games
 
 ALTER TABLE games
   ADD COLUMN bot_difficulty ENUM('easy','medium','hard') NULL;
+
+ALTER TABLE users
+  ADD COLUMN daily_streak_current INT NOT NULL DEFAULT 0,
+  ADD COLUMN daily_streak_best INT NOT NULL DEFAULT 0,
+  ADD COLUMN daily_streak_last_date VARCHAR(10) NULL;

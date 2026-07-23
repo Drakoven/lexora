@@ -5,7 +5,7 @@ import { getUserPosition } from "../ranking/rankingRepository.js";
 
 const SELECT_PROFILE_COLUMNS =
   "id, username, email, avatar, games_played, wins, losses, rating, ranked_games, " +
-  "current_streak, best_streak, highest_score, created_at";
+  "current_streak, best_streak, highest_score, daily_streak_current, daily_streak_best, created_at";
 
 async function toProfile(row) {
   const tier = getTierForRating(row.rating, row.ranked_games);
@@ -23,6 +23,8 @@ async function toProfile(row) {
     currentStreak: row.current_streak,
     bestStreak: row.best_streak,
     highestScore: row.highest_score,
+    dailyStreak: row.daily_streak_current,
+    bestDailyStreak: row.daily_streak_best,
     rating: row.rating,
     rankedGames: row.ranked_games,
     tier: getDisplayTier(tier, leaderboardPosition),

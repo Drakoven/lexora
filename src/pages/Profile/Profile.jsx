@@ -93,6 +93,16 @@ function Profile() {
             <span className="profile-stat-label">Meilleure série</span>
           </div>
           <div className="profile-stat-card">
+            <span className="profile-stat-value">
+              {profile.dailyStreak} 🔥
+            </span>
+            <span className="profile-stat-label">Jours consécutifs</span>
+          </div>
+          <div className="profile-stat-card">
+            <span className="profile-stat-value">{profile.bestDailyStreak}</span>
+            <span className="profile-stat-label">Record de jours consécutifs</span>
+          </div>
+          <div className="profile-stat-card">
             <span className="profile-stat-value">{profile.highestScore}</span>
             <span className="profile-stat-label">Meilleur score</span>
           </div>
