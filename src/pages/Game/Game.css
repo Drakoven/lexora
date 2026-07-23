@@ -81,6 +81,19 @@
   font-variant-numeric: tabular-nums;
 }
 
+.game-timer-blitz {
+  background-color: var(--color-error);
+  color: #fff;
+}
+
+.game-setup-blitz {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
 .game-message {
   color: var(--color-text-muted);
   font-size: 0.9rem;

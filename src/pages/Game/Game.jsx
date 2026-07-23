@@ -12,7 +12,8 @@ import { createEmptyBoard, isStructurallyValid } from "../../game/board.js";
 import * as gameApi from "../../api/game.js";
 import { shareOnFacebook } from "../../social/facebookShare.js";
 
-const TURN_SECONDS = 90;
+const NORMAL_TURN_SECONDS = 90;
+const BLITZ_TURN_SECONDS = 30;
 const MAX_CONSECUTIVE_PASSES = 4;
 
 let nextTileId = 1;
@@ -38,7 +39,9 @@ function initialState() {
     mode: "place",
     exchangeSelection: new Set(),
     consecutivePasses: 0,
-    turnSecondsLeft: TURN_SECONDS,
+    isBlitz: false,
+    turnSeconds: NORMAL_TURN_SECONDS,
+    turnSecondsLeft: NORMAL_TURN_SECONDS,
     pendingBlank: null,
     message: "",
     isMessageError: false,
@@ -54,12 +57,16 @@ function reducer(state, action) {
       const bag = createBag();
       const { drawn: rack0, remaining: afterP0 } = drawTiles(bag, RACK_SIZE);
       const { drawn: rack1, remaining: afterP1 } = drawTiles(afterP0, RACK_SIZE);
+      const turnSeconds = action.isBlitz ? BLITZ_TURN_SECONDS : NORMAL_TURN_SECONDS;
       return {
         ...initialState(),
         phase: "playing",
         playerNames: [action.player1Name, action.player2Name],
         bag: afterP1,
         racks: [tagTiles(rack0), tagTiles(rack1)],
+        isBlitz: action.isBlitz,
+        turnSeconds,
+        turnSecondsLeft: turnSeconds,
       };
     }
 
@@ -205,7 +212,7 @@ function reducer(state, action) {
         placements: [],
         selectedTileId: null,
         consecutivePasses: 0,
-        turnSecondsLeft: TURN_SECONDS,
+        turnSecondsLeft: state.turnSeconds,
         isValidating: false,
         message: `${state.playerNames[state.currentPlayer]} forme ${words.join(", ")} pour ${score} points.`,
         isMessageError: false,
@@ -246,7 +253,7 @@ function reducer(state, action) {
         selectedTileId: null,
         exchangeSelection: new Set(),
         consecutivePasses,
-        turnSecondsLeft: TURN_SECONDS,
+        turnSecondsLeft: state.turnSeconds,
         message: `${state.playerNames[state.currentPlayer]} échange ${toExchange.length} lettre(s).`,
         isMessageError: false,
         lastWords: [],
@@ -266,7 +273,7 @@ function reducer(state, action) {
         placements: [],
         selectedTileId: null,
         consecutivePasses,
-        turnSecondsLeft: TURN_SECONDS,
+        turnSecondsLeft: state.turnSeconds,
         message: `${state.playerNames[state.currentPlayer]} passe son tour.`,
         isMessageError: false,
         lastWords: [],
@@ -319,6 +326,7 @@ function Game() {
   const [state, dispatch] = useReducer(reducer, undefined, initialState);
   const [player1Input, setPlayer1Input] = useState("");
   const [player2Input, setPlayer2Input] = useState("");
+  const [isBlitzInput, setIsBlitzInput] = useState(false);
   const [blankLetterChoice, setBlankLetterChoice] = useState("A");
 
   useEffect(() => {
@@ -372,10 +380,20 @@ function Game() {
             value={player2Input}
             onChange={(e) => setPlayer2Input(e.target.value)}
           />
+          <label className="game-setup-blitz">
+            <input
+              type="checkbox"
+              checked={isBlitzInput}
+              onChange={(e) => setIsBlitzInput(e.target.checked)}
+            />
+            Mode blitz (30s par tour au lieu de 90s)
+          </label>
           <Button
             text="Commencer"
             disabled={!canStart}
-            onClick={() => dispatch({ type: "START_GAME", player1Name, player2Name: player2Input })}
+            onClick={() =>
+              dispatch({ type: "START_GAME", player1Name, player2Name: player2Input, isBlitz: isBlitzInput })
+            }
           />
         </div>
       </AppLayout>
@@ -430,7 +448,10 @@ function Game() {
               {state.playerNames[1]} : {state.scores[1]}
             </span>
           </div>
-          <div className="game-timer">{state.turnSecondsLeft}s</div>
+          <div className={state.isBlitz ? "game-timer game-timer-blitz" : "game-timer"}>
+            {state.isBlitz && "⚡ "}
+            {state.turnSecondsLeft}s
+          </div>
         </div>
 
         {state.message && (
