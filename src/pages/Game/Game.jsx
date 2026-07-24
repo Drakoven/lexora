@@ -46,6 +46,7 @@ function initialState() {
     message: "",
     isMessageError: false,
     lastWords: [],
+    lastMove: [],
     winnerIndex: null,
     isValidating: false,
   };
@@ -186,6 +187,7 @@ function reducer(state, action) {
     case "MOVE_ACCEPTED": {
       const { words, score } = action;
       const board = state.board.map((r) => [...r]);
+      const lastMove = state.placements.map((p) => ({ row: p.row, col: p.col }));
       for (const p of state.placements) {
         board[p.row][p.col] = { letter: p.letter, isBlank: p.isBlank };
       }
@@ -217,6 +219,7 @@ function reducer(state, action) {
         message: `${state.playerNames[state.currentPlayer]} forme ${words.join(", ")} pour ${score} points.`,
         isMessageError: false,
         lastWords: words,
+        lastMove,
       };
 
       if (gameOver) {
@@ -478,6 +481,7 @@ function Game() {
         <Board
           board={state.board}
           placements={state.placements}
+          lastMove={state.lastMove}
           onCellClick={(row, col) => {
             if (state.mode !== "place") return;
             if (state.placements.some((p) => p.row === row && p.col === col)) {

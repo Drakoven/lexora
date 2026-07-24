@@ -11,11 +11,13 @@ const BONUS_DESCRIPTIONS = {
 };
 const COLUMN_LETTERS = "ABCDEFGHIJKLMNO";
 
-function describeCell(row, col, committed, pending, bonus, isCenter) {
+function describeCell(row, col, committed, pending, bonus, isCenter, isLastMove) {
   const coord = `${COLUMN_LETTERS[col]}${row + 1}`;
   if (committed) {
     const letter = committed.isBlank ? committed.letter?.toLowerCase() : committed.letter;
-    return `Case ${coord}, lettre ${letter} posée${committed.isBlank ? " (joker)" : ""}`;
+    const blankSuffix = committed.isBlank ? " (joker)" : "";
+    const lastMoveSuffix = isLastMove ? ", dernier coup joué" : "";
+    return `Case ${coord}, lettre ${letter} posée${blankSuffix}${lastMoveSuffix}`;
   }
   if (pending) {
     const letter = pending.isBlank ? pending.letter?.toLowerCase() : pending.letter;
@@ -25,8 +27,9 @@ function describeCell(row, col, committed, pending, bonus, isCenter) {
   return `Case ${coord} vide${extra}`;
 }
 
-function Board({ board, placements, onCellClick }) {
+function Board({ board, placements, onCellClick, lastMove }) {
   const placementAt = (row, col) => placements.find((p) => p.row === row && p.col === col);
+  const lastMoveCells = new Set((lastMove || []).map((p) => `${p.row},${p.col}`));
 
   return (
     <div className="board-scroll">
@@ -43,13 +46,15 @@ function Board({ board, placements, onCellClick }) {
             if (isCenter) className += " is-center";
             if (committed) className += " is-committed";
             if (pending) className += " is-pending";
+            const isLastMove = committed && lastMoveCells.has(`${row},${col}`);
+            if (isLastMove) className += " is-last-move";
 
             return (
               <button
                 key={`${row}-${col}`}
                 type="button"
                 className={className}
-                aria-label={describeCell(row, col, committed, pending, bonus, isCenter)}
+                aria-label={describeCell(row, col, committed, pending, bonus, isCenter, isLastMove)}
                 onClick={() => {
                   playCellClickSound();
                   onCellClick(row, col);

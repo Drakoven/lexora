@@ -16,6 +16,7 @@ import { useOrderedRack } from "../../hooks/useOrderedRack.js";
 
 const REACTIONS = ["👍", "😂", "😮", "😢", "🔥", "🤔"];
 const EMPTY_RACK = [];
+const EMPTY_PLACEMENTS = [];
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -160,6 +161,13 @@ function OnlineGame() {
   }, [code]);
 
   const [orderedRack, swapRackTiles, reorderRackTiles] = useOrderedRack(game ? game.yourRack : EMPTY_RACK);
+
+  // moves est trié du plus récent au plus ancien (voir gamesRepository) : le
+  // premier coup de placement rencontré est donc forcément le dernier joué.
+  const lastMove = useMemo(
+    () => moves.find((m) => m.moveType === "place")?.detail?.placements ?? EMPTY_PLACEMENTS,
+    [moves]
+  );
 
   const availableTiles = useMemo(
     () => availableRackTiles(orderedRack, placements),
@@ -547,7 +555,7 @@ function OnlineGame() {
         {!game.isYourTurn && !error && <p className="game-message">En attente du coup adverse...</p>}
         {reactionBubble && <p className="online-game-reaction-bubble">{reactionBubble}</p>}
 
-        <Board board={game.board} placements={placements} onCellClick={handleCellClick} />
+        <Board board={game.board} placements={placements} lastMove={lastMove} onCellClick={handleCellClick} />
 
         <Rack
           tiles={availableTiles}
