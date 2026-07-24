@@ -291,12 +291,27 @@ function OnlineGame() {
             {analysis.map((entry, i) =>
               entry.bestWords ? (
                 <li key={i} className="online-game-analysis-missed">
-                  Tu as joué {entry.words.join(", ")} pour {entry.score} points — meilleur coup possible :{" "}
-                  {entry.bestWords.join(", ")} pour {entry.bestScore} points.
+                  <div className="online-game-analysis-row">
+                    <span className="online-game-analysis-label">Toi</span>
+                    <span className="online-game-analysis-words">{entry.words.join(", ")}</span>
+                    <span className="online-game-analysis-score">{entry.score} pts</span>
+                  </div>
+                  <div className="online-game-analysis-row">
+                    <span className="online-game-analysis-label">Meilleur coup</span>
+                    <span className="online-game-analysis-words">{entry.bestWords.join(", ")}</span>
+                    <span className="online-game-analysis-score">{entry.bestScore} pts</span>
+                  </div>
+                  <div className="online-game-analysis-delta">
+                    +{entry.bestScore - entry.score} pts manqués
+                  </div>
                 </li>
               ) : (
                 <li key={i} className="online-game-analysis-optimal">
-                  {entry.words.join(", ")} pour {entry.score} points — coup optimal !
+                  <div className="online-game-analysis-row">
+                    <span className="online-game-analysis-words">{entry.words.join(", ")}</span>
+                    <span className="online-game-analysis-score">{entry.score} pts</span>
+                  </div>
+                  <div className="online-game-analysis-optimal-tag">Coup optimal ✓</div>
                 </li>
               )
             )}
