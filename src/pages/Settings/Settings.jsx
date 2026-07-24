@@ -4,12 +4,21 @@ import AppLayout from "../../components/AppLayout/AppLayout.jsx";
 import Button from "../../components/Button/Button.jsx";
 import * as webPush from "../../push/webPush.js";
 import { isSoundEnabled, setSoundEnabled } from "../../audio/sounds.js";
+import {
+  isStandalone,
+  isIos,
+  hasDeferredPrompt,
+  onInstallPromptChange,
+  promptInstall,
+} from "../../pwa/installPrompt.js";
 
 function Settings() {
   const [state, setState] = useState("loading");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled());
+  const [canInstall, setCanInstall] = useState(() => hasDeferredPrompt());
+  const [installed, setInstalled] = useState(() => isStandalone());
 
   function handleToggleSound(e) {
     const enabled = e.target.checked;
@@ -20,6 +29,14 @@ function Settings() {
   useEffect(() => {
     webPush.getSubscriptionState().then(setState);
   }, []);
+
+  useEffect(() => onInstallPromptChange((prompt) => setCanInstall(prompt !== null)), []);
+
+  async function handleInstall() {
+    const outcome = await promptInstall();
+    setCanInstall(false);
+    if (outcome === "accepted") setInstalled(true);
+  }
 
   async function handleEnable() {
     setError("");
@@ -52,6 +69,30 @@ function Settings() {
     <AppLayout>
       <div className="settings-page">
         <h1>Paramètres</h1>
+
+        <section className="settings-section">
+          <h2>Installer l'application</h2>
+          <p className="settings-section-description">
+            Installe Lexora sur ton téléphone ou ton ordinateur pour y accéder d'un seul geste,
+            comme une vraie application.
+          </p>
+
+          {installed ? (
+            <p className="settings-notice">Lexora est déjà installée sur cet appareil 🎉</p>
+          ) : canInstall ? (
+            <Button text="Installer Lexora" onClick={handleInstall} />
+          ) : isIos() ? (
+            <p className="settings-hint">
+              Sur iPhone/iPad : appuie sur l'icône Partager de Safari, puis choisis
+              "Sur l'écran d'accueil".
+            </p>
+          ) : (
+            <p className="settings-hint">
+              Ouvre le menu de ton navigateur et cherche "Installer l'application" ou "Ajouter à
+              l'écran d'accueil".
+            </p>
+          )}
+        </section>
 
         <section className="settings-section">
           <h2>Notifications</h2>

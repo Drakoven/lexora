@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
+import './pwa/installPrompt.js'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 
