@@ -60,10 +60,15 @@ jobs:
       # .htaccess) sans dépendance supplémentaire. On vide le dossier avant
       # de réextraire pour ne pas laisser traîner d'anciens bundles JS/CSS
       # (noms de fichiers hashés par Vite à chaque build).
+      # "api" est exclu : c'est le sous-dossier géré par le sélecteur Node.js
+      # de cPanel pour l'app same-origin lexora-jeu.fr/api (contient un
+      # .htaccess généré par cPanel avec les directives Passenger) — un
+      # premier essai de cette étape l'a supprimé, cassant l'app le temps
+      # de la recréer.
       - name: Deploy frontend (dist/ -> ~/lexora-jeu.fr)
         run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "find ~/lexora-jeu.fr -mindepth 1 -delete"
+            "find ~/lexora-jeu.fr -mindepth 1 -maxdepth 1 ! -name api -exec rm -rf {} +"
           tar -C dist -czf - . | ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "tar -xzf - -C ~/lexora-jeu.fr"
 
