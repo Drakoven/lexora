@@ -100,6 +100,10 @@ app.use((err, req, res, _next) => {
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
+  // Doit matcher le "path" donné au client (src/socket.js) : en prod, le
+  // backend vit sous /api (lexora-jeu.fr/api), donc Socket.io doit rester
+  // sous ce même préfixe pour qu'Apache/Passenger route bien le trafic.
+  path: "/api/socket.io",
   cors: {
     origin: process.env.CLIENT_ORIGIN,
     credentials: true,

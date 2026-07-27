@@ -74,34 +74,25 @@ jobs:
 
       # node_modules et .env ne sont jamais touchés : exclus du tar source ET
       # jamais supprimés côté serveur (le find ne cible que les autres
-      # entrées à la racine de ~/lexora.api).
-      - name: Deploy backend (server/ -> ~/lexora.api)
-        run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "find ~/lexora.api -mindepth 1 -maxdepth 1 ! -name node_modules ! -name .env -exec rm -rf {} +"
-          tar -C server --exclude=node_modules --exclude=.env -czf - . | \
-            ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "tar -xzf - -C ~/lexora.api"
-
-      # touch tmp/restart.txt déclenche un redémarrage gracieux de l'app par
-      # Phusion Passenger (le moteur derrière le Node.js Selector de cPanel),
-      # sans passer par l'UI ou l'API cPanel.
-      - name: Install backend dependencies and restart
-        run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            'source ~/nodevenv/lexora.api/24/bin/activate && cd ~/lexora.api && npm install --omit=dev && mkdir -p tmp && touch tmp/restart.txt'
-
-      # TEMPORAIRE (migration same-origin lexora-jeu.fr/api) : duplique le
-      # déploiement backend vers la nouvelle app cPanel ~/lexora.api2, en
-      # plus de l'app existante ci-dessus (qui reste la seule à servir les
-      # vrais joueurs pour l'instant). À retirer une fois la bascule
-      # confirmée (voir DEPLOY.md).
-      - name: Deploy backend to lexora.api2 (temporary, same-origin migration)
+      # entrées à la racine de ~/lexora.api2).
+      #
+      # Cible ~/lexora.api2 (same-origin, lexora-jeu.fr/api) depuis la
+      # migration hors de api.lexora-jeu.fr — voir DEPLOY.md. L'ancienne app
+      # ~/lexora.api n'est plus déployée : gelée intentionnellement comme
+      # filet de secours (rollback = repointer VITE_API_URL dessus et
+      # redéployer le frontend).
+      - name: Deploy backend (server/ -> ~/lexora.api2)
         run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "find ~/lexora.api2 -mindepth 1 -maxdepth 1 ! -name node_modules ! -name .env -exec rm -rf {} +"
           tar -C server --exclude=node_modules --exclude=.env -czf - . | \
             ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             "tar -xzf - -C ~/lexora.api2"
+
+      # touch tmp/restart.txt déclenche un redémarrage gracieux de l'app par
+      # Phusion Passenger (le moteur derrière le Node.js Selector de cPanel),
+      # sans passer par l'UI ou l'API cPanel.
+      - name: Install backend dependencies and restart
+        run: |
           ssh -i ~/.ssh/deploy_key "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             'source ~/nodevenv/lexora.api2/24/bin/activate && cd ~/lexora.api2 && npm install --omit=dev && mkdir -p tmp && touch tmp/restart.txt'

@@ -8,13 +8,19 @@ héberger séparément :
 
 ## 0. Prérequis
 
-- Domaine : **lexora-jeu.fr** (créé) — frontend sur `lexora-jeu.fr`,
-  backend sur le sous-domaine `api.lexora-jeu.fr`
+- Domaine : **lexora-jeu.fr** (créé) — frontend et backend sur le **même**
+  domaine (`lexora-jeu.fr` pour le frontend, `lexora-jeu.fr/api` pour le
+  backend, via une app Node.js cPanel "path-based"). Historiquement le
+  backend vivait sur le sous-domaine `api.lexora-jeu.fr` ; migré en
+  same-origin le 2026-07-27 pour fixer un bug de session perdue au
+  changement/fermeture d'onglet sur certains navigateurs (cookie
+  cross-subdomain traité comme éphémère malgré `SameSite=Lax`). L'ancienne
+  app `api.lexora-jeu.fr` reste en place, gelée, comme filet de secours.
 - Un compte O2Switch actif
 - DNS propagés vers O2Switch pour `lexora-jeu.fr`
-- Le certificat SSL activé sur le domaine ET le sous-domaine `api.` une
-  fois créé (AutoSSL de cPanel, gratuit et généralement automatique une
-  fois le DNS bon — vérifier dans cPanel > SSL/TLS Status)
+- Le certificat SSL activé sur le domaine (AutoSSL de cPanel, gratuit et
+  généralement automatique une fois le DNS bon — vérifier dans cPanel >
+  SSL/TLS Status)
 
 Sans HTTPS actif, la connexion ne fonctionnera pas : en production les
 cookies de session sont marqués `secure`, donc ils exigent HTTPS.
@@ -51,9 +57,16 @@ laisse le reste s'exécuter.)
 Dans cPanel > **Configuration Node.js App** (ou "Node.js Selector") :
 1. Créer une application :
    - **Version Node** : la plus récente disponible (18+)
-   - **Dossier de l'application** : ex. `lexora-api`
-   - **Domaine/sous-domaine** : `api.lexora-jeu.fr` (créer d'abord ce
-     sous-domaine dans cPanel > Sous-domaines si pas déjà fait)
+   - **Dossier de l'application** : ex. `lexora.api2`
+   - **URL de l'application** : sélectionner le domaine `lexora-jeu.fr`
+     existant (celui du frontend) et renseigner `/api` comme chemin —
+     PAS un nouveau sous-domaine. cPanel gère alors lui-même un
+     `.htaccess` dans `~/lexora-jeu.fr/api/` avec les directives Passenger
+     nécessaires ; **ne jamais supprimer ce sous-dossier** (voir la note
+     dans `deploy.yml` sur l'exclusion `! -name api`) et s'assurer que le
+     `.htaccess` du frontend (`public/.htaccess` du dépôt) exclut bien
+     `/api/*` de sa règle catch-all SPA, sinon les requêtes API sont
+     interceptées avant d'atteindre Passenger.
    - **Fichier de démarrage** : `src/index.js`
 2. Uploader le contenu du dossier `server/` (hors `node_modules`) dans le
    dossier de l'application, via le gestionnaire de fichiers cPanel, FTP/SFTP,
@@ -77,7 +90,7 @@ En local, avant de builder :
 1. Crée `.env.production` à la racine du projet (voir
    [.env.example](.env.example)) avec :
    ```
-   VITE_API_URL=https://api.lexora-jeu.fr
+   VITE_API_URL=https://lexora-jeu.fr
    ```
 2. `npm run build` → génère le dossier `dist/`.
 3. Uploade le **contenu** de `dist/` (pas le dossier `dist` lui-même) dans
@@ -171,8 +184,9 @@ bot OK).
 
 **Ce que le pipeline fait** : build du frontend (`npm run build`, utilise le
 `.env.production` déjà committé), transfert (tar+ssh) de `dist/` vers
-`~/lexora-jeu.fr/` et de `server/` (hors `node_modules`/`.env`) vers
-`~/lexora.api/`, puis `npm install --omit=dev` et redémarrage.
+`~/lexora-jeu.fr/` (en excluant le sous-dossier `api/`, géré par cPanel —
+voir section 2) et de `server/` (hors `node_modules`/`.env`) vers
+`~/lexora.api2/`, puis `npm install --omit=dev` et redémarrage.
 
 **Ce que le pipeline ne fait PAS** : aucune migration de base de données.
 Si un déploiement inclut un nouveau fichier `server/src/db/0XX_*.sql`, il
