@@ -22,7 +22,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const dicPath = join(__dirname, "fr.dic");
 const dicLines = readFileSync(dicPath, "utf-8").split("\n");
 const excludedTags = /\bpo:(pfx|sfx|err)\b/;
-const filteredEntries = dicLines.slice(1).filter((line) => line && !excludedTags.test(line));
+const filteredEntries = dicLines
+  .slice(1)
+  .filter((line) => line && !excludedTags.test(line))
+  // fr.aff's PFX U. rule prepends SI magnitude prefixes (k, m, µ, M, G...)
+  // to base unit symbols (s, m, g, cd, l, mol, rad...) to recognize things
+  // like "km"/"kg" for spell-checking — but it mechanically generates
+  // faux-mots like MS, PM, KM that aren't real Scrabble words (signalé par
+  // un joueur : "MS" accepté par le bot). Stripping just the U. flag keeps
+  // the base symbol itself (already a separate, pre-existing question)
+  // while killing the prefix+unit cross product.
+  .map((line) => line.replace(/^(\S+)\/U\.(\|\|--)/, "$1/$2"));
 const filteredDicPath = join(__dirname, ".fr.filtered.dic");
 writeFileSync(filteredDicPath, [String(filteredEntries.length), ...filteredEntries].join("\n") + "\n", "utf-8");
 
