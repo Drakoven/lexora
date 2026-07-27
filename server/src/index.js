@@ -26,6 +26,13 @@ import { getBotUserId } from "./game/botUser.js";
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
 
+// Express génère un ETag faible par défaut sur tous les res.json(...) : le
+// navigateur peut alors revalider une réponse via If-None-Match et recevoir
+// un 304, que le client traite comme une erreur (seul 200-299 est "ok"),
+// faisant passer une session pourtant valide pour une déconnexion — c'est
+// une API JSON dynamique, aucune de ses réponses ne doit être mise en cache.
+app.set("etag", false);
+
 // Optionnel : n'active Sentry que si un DSN est fourni (comme SMTP_HOST pour
 // l'email), pour que le dev local n'ait pas besoin d'un compte Sentry.
 if (process.env.SENTRY_DSN) {
