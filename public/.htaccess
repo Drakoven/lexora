@@ -1,10 +1,16 @@
 # Renvoie toutes les routes qui ne correspondent pas à un fichier/dossier réel
 # vers index.html, pour que React Router gère la navigation côté client
 # (nécessaire pour les liens directs comme /verify-email ou /reset-password).
+# /api/* est exclu : c'est le backend Node same-origin (lexora-jeu.fr/api),
+# géré par le .htaccess propre de cPanel dans ce sous-dossier — sans cette
+# exclusion, cette règle catch-all réécrit /api/* vers index.html avant que
+# la configuration Passenger du sous-dossier ait la moindre chance de
+# s'appliquer.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_URI} !^/api/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
