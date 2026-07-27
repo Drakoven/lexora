@@ -7,6 +7,7 @@ import Board from "../../components/Board/Board.jsx";
 import Rack from "../../components/Rack/Rack.jsx";
 import Button from "../../components/Button/Button.jsx";
 import WordDefinition from "../../components/WordDefinition/WordDefinition.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { LETTER_VALUES } from "../../game/letters.js";
 import { isStructurallyValid } from "../../game/board.js";
 import * as dailyChallengeApi from "../../api/dailyChallenge.js";
@@ -17,6 +18,7 @@ function tagTiles(tiles) {
 }
 
 function DailyChallenge() {
+  const { user } = useAuth();
   const [phase, setPhase] = useState("loading"); // loading | unavailable | playing | result
   const [board, setBoard] = useState(null);
   const [rack, setRack] = useState([]);
@@ -27,6 +29,7 @@ function DailyChallenge() {
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [leaderboard, setLeaderboard] = useState(null);
 
   useEffect(() => {
     dailyChallengeApi
@@ -45,6 +48,11 @@ function DailyChallenge() {
       })
       .catch(() => setPhase("unavailable"));
   }, []);
+
+  useEffect(() => {
+    if (phase !== "result") return;
+    dailyChallengeApi.getDailyChallengeLeaderboard().then(setLeaderboard).catch(() => {});
+  }, [phase]);
 
   if (phase === "loading") {
     return (
@@ -100,6 +108,34 @@ function DailyChallenge() {
               Le coup original : <strong>{result.targetScore} points</strong>
             </p>
           </div>
+
+          {leaderboard && (
+            <div className="daily-challenge-leaderboard">
+              <h2>Classement du jour</h2>
+              {leaderboard.leaderboard.length === 0 ? (
+                <p className="game-message">Personne d'autre n'a encore joué aujourd'hui.</p>
+              ) : (
+                <ol className="daily-challenge-leaderboard-list">
+                  {leaderboard.leaderboard.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className={entry.id === user?.id ? "is-you" : ""}
+                    >
+                      <span className="daily-challenge-leaderboard-position">#{entry.position}</span>
+                      <span className="daily-challenge-leaderboard-name">{entry.username}</span>
+                      <span className="daily-challenge-leaderboard-score">{entry.score} pts</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {leaderboard.you && leaderboard.you.position > leaderboard.leaderboard.length && (
+                <p className="daily-challenge-leaderboard-you">
+                  Ta position : #{leaderboard.you.position} ({leaderboard.you.score} pts)
+                </p>
+              )}
+            </div>
+          )}
+
           <p className="game-message">Reviens demain pour un nouveau défi.</p>
         </div>
       </AppLayout>

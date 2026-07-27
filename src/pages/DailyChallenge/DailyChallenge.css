@@ -19,3 +19,60 @@
   font-weight: 700;
   color: var(--color-text);
 }
+
+.daily-challenge-leaderboard {
+  width: 100%;
+  max-width: 420px;
+}
+
+.daily-challenge-leaderboard h2 {
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.daily-challenge-leaderboard-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.daily-challenge-leaderboard-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background-color: var(--color-background-soft);
+}
+
+.daily-challenge-leaderboard-list li.is-you {
+  border: 1px solid var(--color-primary);
+}
+
+.daily-challenge-leaderboard-position {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  min-width: 28px;
+}
+
+.daily-challenge-leaderboard-name {
+  flex: 1 1 auto;
+  text-align: left;
+  font-weight: 600;
+}
+
+.daily-challenge-leaderboard-score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.daily-challenge-leaderboard-you {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-top: 8px;
+}

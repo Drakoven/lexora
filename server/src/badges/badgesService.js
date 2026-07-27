@@ -9,6 +9,10 @@ export async function getBadgesForUser(userId) {
   );
   const user = rows[0];
   const friends = await friendsRepo.listAcceptedFriends(userId);
+  const [[dailyChallenge]] = await pool.query(
+    "SELECT COUNT(*) AS won FROM daily_challenge_attempts WHERE user_id = ? AND won = 1",
+    [userId]
+  );
 
   return evaluateBadges({
     gamesPlayed: user.games_played,
@@ -18,5 +22,6 @@ export async function getBadgesForUser(userId) {
     bestRating: user.best_rating,
     rankedGames: user.ranked_games,
     friendCount: friends.length,
+    dailyChallengesWon: dailyChallenge.won,
   });
 }

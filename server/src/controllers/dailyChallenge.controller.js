@@ -5,6 +5,11 @@ export async function getTodaysChallenge(req, res) {
   res.json(result);
 }
 
+export async function getLeaderboard(req, res) {
+  const result = await dailyChallengeService.getTodaysLeaderboard(req.session.userId);
+  res.json(result);
+}
+
 export async function submitDailyChallenge(req, res) {
   const { placements } = req.body;
   const result = await dailyChallengeService.submitDailyChallenge(req.session.userId, placements);

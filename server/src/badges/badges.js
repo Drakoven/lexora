@@ -121,6 +121,27 @@ export const BADGES = [
     description: "Ajoute un ami.",
     check: (s) => s.friendCount >= 1,
   },
+  {
+    key: "daily_challenge_1",
+    label: "Défi relevé",
+    emoji: "🧩",
+    description: "Gagne ton premier défi du jour.",
+    check: (s) => s.dailyChallengesWon >= 1,
+  },
+  {
+    key: "daily_challenge_10",
+    label: "Habitué du défi",
+    emoji: "📆",
+    description: "Gagne 10 défis du jour.",
+    check: (s) => s.dailyChallengesWon >= 10,
+  },
+  {
+    key: "daily_challenge_30",
+    label: "Maître du quotidien",
+    emoji: "🌞",
+    description: "Gagne 30 défis du jour.",
+    check: (s) => s.dailyChallengesWon >= 30,
+  },
 ];
 
 export function evaluateBadges(stats) {

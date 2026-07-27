@@ -69,6 +69,46 @@ export async function getTodaysChallenge(userId) {
   };
 }
 
+export async function getTodaysLeaderboard(userId, limit = 20) {
+  const today = todayDateString();
+
+  const [rows] = await pool.query(
+    `SELECT u.id, u.username, u.avatar, a.your_score, a.won
+     FROM daily_challenge_attempts a
+     JOIN users u ON u.id = a.user_id
+     WHERE a.challenge_date = ?
+     ORDER BY a.your_score DESC, a.created_at ASC
+     LIMIT ?`,
+    [today, limit]
+  );
+
+  const leaderboard = rows.map((row, index) => ({
+    position: index + 1,
+    id: row.id,
+    username: row.username,
+    avatar: row.avatar,
+    score: row.your_score,
+    won: !!row.won,
+  }));
+
+  const [meRows] = await pool.query(
+    "SELECT your_score AS score, won FROM daily_challenge_attempts WHERE user_id = ? AND challenge_date = ?",
+    [userId, today]
+  );
+  if (meRows.length === 0) return { leaderboard, you: null };
+
+  const [[{ count }]] = await pool.query(
+    `SELECT COUNT(*) AS count FROM daily_challenge_attempts
+     WHERE challenge_date = ? AND your_score > ?`,
+    [today, meRows[0].score]
+  );
+
+  return {
+    leaderboard,
+    you: { position: count + 1, score: meRows[0].score, won: !!meRows[0].won },
+  };
+}
+
 export async function submitDailyChallenge(userId, placements) {
   const today = todayDateString();
   const move = await pickTodaysMove(today);
