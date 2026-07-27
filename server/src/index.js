@@ -49,9 +49,15 @@ const sessionMiddleware = session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    // "none" est nécessaire en prod car frontend/backend vivent sur des domaines
-    // différents (cookie cross-site) ; ça exige secure:true (HTTPS obligatoire).
-    sameSite: isProduction ? "none" : "lax",
+    // lexora-jeu.fr et api.lexora-jeu.fr partagent le même domaine
+    // enregistrable (lexora-jeu.fr) : ce sont deux origines différentes,
+    // mais un seul et même "site" au sens de SameSite — donc "lax" suffit
+    // et le cookie est bien envoyé entre les deux sous-domaines. L'ancien
+    // "none" marquait ce cookie comme intentionnellement cross-site, ce qui
+    // pousse les navigateurs modernes à le traiter comme éphémère (perdu à
+    // la fermeture de l'onglet, quel que soit maxAge) — cause du bug
+    // "toujours déconnecté en rouvrant l'appli".
+    sameSite: "lax",
     secure: isProduction,
     maxAge: 1000 * 60 * 60 * 24 * 7,
   },
