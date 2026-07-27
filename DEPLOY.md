@@ -119,15 +119,38 @@ besoin de passer par l'UI cPanel).
 **Runner auto-hébergé, pas un runner GitHub classique** : O2Switch bloque
 silencieusement les connexions SSH entrantes depuis les plages IP des
 runners GitHub hébergés, donc le job tourne sur ta propre machine
-(`C:\Users\Flori\actions-runner`), enregistrée comme runner du dépôt. Avant
-de déclencher un déploiement, démarre-le :
-```
-cd C:\Users\Flori\actions-runner
-.\run.cmd
-```
-et laisse la fenêtre ouverte jusqu'à "Listening for Jobs". Pas besoin de
-`rsync` (absent nativement sur Windows) : le transfert se fait en
-tar+ssh, ce qui donne le même résultat (miroir complet du dossier,
+(`C:\Users\Flori\actions-runner`), enregistrée comme runner du dépôt.
+
+**Tourne en service Windows depuis le 2026-07-27** — plus besoin de lancer
+`run.cmd` à la main avant chaque déploiement (ancien pain point : le runner
+tombait dès que la fenêtre du terminal était fermée, ce qui a bloqué un
+déploiement en plein milieu des fixes Reddit). Le service
+`actions.runner.Drakoven-lexora.FLOW-PC` démarre automatiquement avec
+Windows. Pour vérifier qu'il tourne : `Get-Service actions.runner.*` (statut
+`Running`) ou `gh api repos/Drakoven/lexora/actions/runners --jq '.runners[]'`
+(statut `online`).
+
+Deux pièges rencontrés lors de la mise en place, si jamais il faut la
+refaire (`.\config.cmd remove --token <token>` puis reconfigurer) :
+- **Le compte `NETWORK SERVICE` (défaut sans `--windowslogonaccount`) plante
+  au démarrage** avec l'erreur Windows générique 1068 ("le service ou le
+  groupe de dépendance n'a pas pu démarrer"), sans event log exploitable.
+  Fonctionne avec `NT AUTHORITY\SYSTEM` à la place (pas de mot de passe
+  requis, compte système) :
+  ```
+  .\config.cmd --unattended --url https://github.com/Drakoven/lexora --token <token> --runasservice --windowslogonaccount "NT AUTHORITY\SYSTEM"
+  ```
+- **La stratégie d'exécution PowerShell bloque l'étape "Add Git Bash to
+  PATH"** du workflow (`désactivée sur ce système`) : le compte `Flori`
+  avait une stratégie `CurrentUser: Unrestricted` déjà en place, mais
+  `SYSTEM` retombe sur `LocalMachine`, resté à `Restricted` par défaut.
+  Fixé une fois pour toutes avec (admin requis) :
+  ```
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+  ```
+
+Pas besoin de `rsync` (absent nativement sur Windows) : le transfert se fait
+en tar+ssh, ce qui donne le même résultat (miroir complet du dossier,
 dotfiles comme `.htaccess` inclus).
 
 **Déclenchement** : manuel uniquement (`workflow_dispatch`), volontairement
@@ -200,8 +223,9 @@ toucher à `.env.production`.
 **Déploiement continu staging** : workflow séparé
 `.github/workflows/deploy-staging.yml`, déclenchement manuel
 (`gh workflow run deploy-staging.yml` ou bouton "Run workflow" sur "Deploy
-to staging" dans l'onglet Actions), même runner auto-hébergé à démarrer
-avant (voir plus haut), mêmes secrets SSH que la prod (même serveur, juste
+to staging" dans l'onglet Actions), même runner auto-hébergé, tournant en
+service (voir plus haut, rien à démarrer manuellement), mêmes secrets SSH
+que la prod (même serveur, juste
 des dossiers de destination différents — `~/staging.lexora-jeu.fr` et
 `~/staging.lexora.api`). Délibérément un fichier séparé de `deploy.yml`
 plutôt qu'un paramètre `environment` sur un menu déroulant : ça rend
