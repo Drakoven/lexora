@@ -10,7 +10,9 @@ export async function apiFetch(path, options = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.message || "Une erreur est survenue.");
+    const error = new Error(data?.message || "Une erreur est survenue.");
+    error.status = response.status;
+    throw error;
   }
 
   return data;
