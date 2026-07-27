@@ -70,6 +70,23 @@
   accent-color: var(--color-primary);
 }
 
+.online-lobby-blitz-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.online-lobby-blitz-checkbox input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  accent-color: var(--color-primary);
+}
+
 .online-lobby-games {
   list-style: none;
   display: flex;

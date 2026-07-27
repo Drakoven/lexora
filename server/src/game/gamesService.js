@@ -12,7 +12,12 @@ import { canAfford } from "./rackUtils.js";
 
 export const TURN_HOURS = 48;
 const TURN_MS = TURN_HOURS * 60 * 60 * 1000;
+const BLITZ_TURN_SECONDS = 30;
 const MAX_CONSECUTIVE_PASSES = 4;
+
+function turnMsFor(game) {
+  return game.isBlitz ? BLITZ_TURN_SECONDS * 1000 : TURN_MS;
+}
 
 function rackValue(rack) {
   return rack.reduce((sum, tile) => sum + (tile.isBlank ? 0 : LETTER_VALUES[tile.letter]), 0);
@@ -61,7 +66,7 @@ async function finishGame(game, playerIndexWhoEmptiedRack) {
     await recordGameResult(saved.player2Id, saved.winner === 1 ? "win" : "loss", saved.score2);
   }
 
-  if (saved.matchType === "random") {
+  if (saved.matchType === "random" && !saved.isBlitz) {
     await applyRankedResult(saved.player1Id, saved.player2Id, saved.winner, saved.id);
   }
 
@@ -76,7 +81,7 @@ async function checkTurnExpiry(game) {
   while (
     current.status === "playing" &&
     current.turnStartedAt &&
-    Date.now() - new Date(current.turnStartedAt).getTime() > TURN_MS &&
+    Date.now() - new Date(current.turnStartedAt).getTime() > turnMsFor(current) &&
     iterations < MAX_CONSECUTIVE_PASSES
   ) {
     current.consecutivePasses += 1;
@@ -120,9 +125,10 @@ async function personalize(game, userId) {
       game.status === "playing" &&
       game.currentPlayer !== yourPlayerIndex &&
       !!game.turnStartedAt &&
-      Date.now() - new Date(game.turnStartedAt).getTime() > TURN_MS,
+      Date.now() - new Date(game.turnStartedAt).getTime() > turnMsFor(game),
     turnStartedAt: game.turnStartedAt,
     turnHours: TURN_HOURS,
+    isBlitz: game.isBlitz,
     players: [
       { username: game.player1?.username, avatar: game.player1?.avatar },
       game.player2Id ? { username: game.player2?.username, avatar: game.player2?.avatar } : null,
@@ -149,7 +155,7 @@ async function startGame(game, joinerUserId) {
   return repo.saveGame(game);
 }
 
-export async function createGame(userId, matchType = "code", invitedUserId = null) {
+export async function createGame(userId, matchType = "code", invitedUserId = null, isBlitz = false) {
   const game = await repo.createGame({
     player1Id: userId,
     player2Id: null,
@@ -166,13 +172,14 @@ export async function createGame(userId, matchType = "code", invitedUserId = nul
     winner: null,
     matchType,
     invitedUserId,
+    isBlitz,
   });
   return await personalize(game, userId);
 }
 
 const BOT_DIFFICULTIES = ["easy", "medium", "hard"];
 
-export async function createBotGame(userId, difficulty) {
+export async function createBotGame(userId, difficulty, isBlitz = false) {
   const botUserId = await getBotUserId();
   const botDifficulty = BOT_DIFFICULTIES.includes(difficulty) ? difficulty : "medium";
   const game = await repo.createGame({
@@ -192,6 +199,7 @@ export async function createBotGame(userId, difficulty) {
     matchType: "bot",
     invitedUserId: null,
     botDifficulty,
+    isBlitz,
   });
   const started = await startGame(game, botUserId);
   return await personalize(started, userId);
@@ -222,15 +230,15 @@ export async function joinGame(code, userId) {
   return { game: await personalize(saved, userId) };
 }
 
-export async function findOrCreateRandomMatch(userId) {
-  const waiting = await repo.findWaitingRandomGame(userId);
+export async function findOrCreateRandomMatch(userId, isBlitz = false) {
+  const waiting = await repo.findWaitingRandomGame(userId, isBlitz);
 
   if (waiting) {
     const saved = await startGame(waiting, userId);
     return { game: await personalize(saved, userId), matched: true };
   }
 
-  const created = await createGame(userId, "random");
+  const created = await createGame(userId, "random", null, isBlitz);
   return { game: created, matched: false };
 }
 
@@ -478,7 +486,7 @@ export async function claimVictory(code, userId) {
   const yourPlayerIndex = isPlayer1 ? 0 : 1;
   if (game.currentPlayer === yourPlayerIndex) return { error: "C'est ton tour, tu ne peux pas réclamer la victoire." };
 
-  const overdue = game.turnStartedAt && Date.now() - new Date(game.turnStartedAt).getTime() > TURN_MS;
+  const overdue = game.turnStartedAt && Date.now() - new Date(game.turnStartedAt).getTime() > turnMsFor(game);
   if (!overdue) return { error: "Le tour de ton adversaire n'est pas encore en retard." };
 
   const finished = await finishGame(game, yourPlayerIndex);

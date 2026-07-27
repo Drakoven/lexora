@@ -19,6 +19,8 @@ function OnlineLobby() {
   const [isBusy, setIsBusy] = useState(false);
   const [games, setGames] = useState([]);
   const [botDifficulty, setBotDifficulty] = useState("medium");
+  const [isBlitzMatch, setIsBlitzMatch] = useState(false);
+  const [isBlitzBot, setIsBlitzBot] = useState(false);
 
   useEffect(() => {
     gamesApi.listGames().then(setGames);
@@ -40,7 +42,7 @@ function OnlineLobby() {
     setError("");
     setIsBusy(true);
     try {
-      const game = await gamesApi.findRandomMatch();
+      const game = await gamesApi.findRandomMatch(isBlitzMatch);
       navigate(`/play/online/${game.code}`);
     } catch (err) {
       setError(err.message);
@@ -52,7 +54,7 @@ function OnlineLobby() {
     setError("");
     setIsBusy(true);
     try {
-      const game = await gamesApi.createBotGame(botDifficulty);
+      const game = await gamesApi.createBotGame(botDifficulty, isBlitzBot);
       navigate(`/play/online/${game.code}`);
     } catch (err) {
       setError(err.message);
@@ -129,7 +131,31 @@ function OnlineLobby() {
         <section className="online-lobby-card">
           <h2>Adversaire aléatoire</h2>
           <p>On te trouve un adversaire disponible, ou tu attends qu'un autre joueur cherche aussi.</p>
-          <p className="online-lobby-ranked-note">Cette partie compte pour ton classement.</p>
+          <div className="online-lobby-difficulty">
+            <label>
+              <input
+                type="radio"
+                name="match-mode"
+                checked={!isBlitzMatch}
+                onChange={() => setIsBlitzMatch(false)}
+              />
+              Normal
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="match-mode"
+                checked={isBlitzMatch}
+                onChange={() => setIsBlitzMatch(true)}
+              />
+              Blitz ⚡ (30s/tour)
+            </label>
+          </div>
+          {isBlitzMatch ? (
+            <p>Partie amicale, sans impact sur ton classement.</p>
+          ) : (
+            <p className="online-lobby-ranked-note">Cette partie compte pour ton classement.</p>
+          )}
           <Button text="Trouver une partie" disabled={isBusy} onClick={handleRandomMatch} />
         </section>
 
@@ -168,6 +194,14 @@ function OnlineLobby() {
               Difficile
             </label>
           </div>
+          <label className="online-lobby-blitz-checkbox">
+            <input
+              type="checkbox"
+              checked={isBlitzBot}
+              onChange={(e) => setIsBlitzBot(e.target.checked)}
+            />
+            Mode blitz ⚡ (30s par tour)
+          </label>
           <Button text="Jouer contre le bot" disabled={isBusy} onClick={handleBotGame} />
         </section>
 

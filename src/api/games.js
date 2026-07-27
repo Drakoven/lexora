@@ -4,10 +4,10 @@ export function createGame() {
   return apiFetch("/api/games", { method: "POST" });
 }
 
-export function createBotGame(difficulty) {
+export function createBotGame(difficulty, isBlitz = false) {
   return apiFetch("/api/games/bot", {
     method: "POST",
-    body: JSON.stringify({ difficulty }),
+    body: JSON.stringify({ difficulty, isBlitz }),
   });
 }
 
@@ -25,8 +25,11 @@ export function inviteFriend(friendUserId) {
   });
 }
 
-export function findRandomMatch() {
-  return apiFetch("/api/games/matchmaking", { method: "POST" });
+export function findRandomMatch(isBlitz = false) {
+  return apiFetch("/api/games/matchmaking", {
+    method: "POST",
+    body: JSON.stringify({ isBlitz }),
+  });
 }
 
 export function cancelGame(code) {

@@ -17,6 +17,7 @@ import { useOrderedRack } from "../../hooks/useOrderedRack.js";
 const REACTIONS = ["👍", "😂", "😮", "😢", "🔥", "🤔"];
 const EMPTY_RACK = [];
 const EMPTY_PLACEMENTS = [];
+const BLITZ_TURN_SECONDS = 30;
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -132,10 +133,40 @@ function OnlineGame() {
     gamesApi.getMoves(code).then(setMoves).catch(() => {});
   }
 
+  // Poll léger dédié au blitz : ne touche pas placements/selectedTileId sauf
+  // si le tour vient justement d'être repris (auto-passe côté serveur), pour
+  // ne pas effacer un mot en cours de pose pendant que le joueur y réfléchit
+  // encore. Chaque appel déclenche checkTurnExpiry côté serveur, ce qui fait
+  // apparaître l'auto-passe avec ~1s de latence max sans nouvelle infra socket.
+  function pollBlitzGame() {
+    gamesApi
+      .getGame(code)
+      .then((fresh) => {
+        setGame((prev) => {
+          if (prev?.isYourTurn && !fresh.isYourTurn) {
+            setPlacements([]);
+            setSelectedTileId(null);
+          }
+          return fresh;
+        });
+      })
+      .catch(() => {});
+  }
+
   useEffect(() => {
     refreshGame();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
+
+  useEffect(() => {
+    if (!game?.isBlitz || game.status !== "playing") return undefined;
+    const interval = setInterval(() => {
+      setNow(Date.now());
+      pollBlitzGame();
+    }, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.isBlitz, game?.status, code]);
 
   useEffect(() => {
     if (!socket.connected) socket.connect();
@@ -364,6 +395,10 @@ function OnlineGame() {
   }
 
   const canValidate = placements.length > 0 && isStructurallyValid(game.board, placements);
+  const blitzSecondsLeft =
+    game.isBlitz && game.turnStartedAt
+      ? Math.max(0, BLITZ_TURN_SECONDS - Math.floor((now - new Date(game.turnStartedAt).getTime()) / 1000))
+      : null;
 
   function handleCellClick(row, col) {
     if (mode !== "place") return;
@@ -538,7 +573,11 @@ function OnlineGame() {
             <span className="game-opponent-rack-count">
               🀄 Adversaire : {game.opponentRackSize} lettre{game.opponentRackSize !== 1 ? "s" : ""}
             </span>
-            <div className="game-timer">{formatRemaining(game.turnStartedAt, game.turnHours, now)}</div>
+            {game.isBlitz ? (
+              <div className="game-timer game-timer-blitz">⚡ {blitzSecondsLeft}s</div>
+            ) : (
+              <div className="game-timer">{formatRemaining(game.turnStartedAt, game.turnHours, now)}</div>
+            )}
           </div>
         </div>
 

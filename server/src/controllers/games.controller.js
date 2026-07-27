@@ -21,7 +21,7 @@ export async function createGame(req, res) {
 }
 
 export async function createBotGame(req, res) {
-  const game = await gamesService.createBotGame(req.session.userId, req.body.difficulty);
+  const game = await gamesService.createBotGame(req.session.userId, req.body.difficulty, !!req.body.isBlitz);
   res.status(201).json(game);
 }
 
@@ -43,7 +43,7 @@ export async function inviteFriend(req, res) {
 }
 
 export async function findMatch(req, res) {
-  const result = await gamesService.findOrCreateRandomMatch(req.session.userId);
+  const result = await gamesService.findOrCreateRandomMatch(req.session.userId, !!req.body.isBlitz);
   if (result.matched) notifyGameUpdated(result.game.code);
   res.json(result.game);
 }

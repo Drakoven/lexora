@@ -29,6 +29,7 @@ function toRow(game) {
     match_type: game.matchType,
     invited_user_id: game.invitedUserId ?? null,
     bot_difficulty: game.botDifficulty ?? null,
+    is_blitz: game.isBlitz ? 1 : 0,
   };
 }
 
@@ -52,6 +53,7 @@ function fromRow(row) {
     matchType: row.match_type,
     invitedUserId: row.invited_user_id,
     botDifficulty: row.bot_difficulty,
+    isBlitz: !!row.is_blitz,
     updatedAt: row.updated_at,
     player1: row.player1_username ? { username: row.player1_username, avatar: row.player1_avatar } : undefined,
     player2: row.player2_username ? { username: row.player2_username, avatar: row.player2_avatar } : undefined,
@@ -75,8 +77,8 @@ export async function createGame(game) {
   const row = toRow({ ...game, code });
   const [result] = await pool.query(
     `INSERT INTO games (code, player1_id, player2_id, board, bag, rack1, rack2, score1, score2,
-       current_player, consecutive_passes, status, turn_started_at, winner, match_type, invited_user_id, bot_difficulty)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       current_player, consecutive_passes, status, turn_started_at, winner, match_type, invited_user_id, bot_difficulty, is_blitz)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       row.code,
       row.player1_id,
@@ -95,6 +97,7 @@ export async function createGame(game) {
       row.match_type,
       row.invited_user_id,
       row.bot_difficulty,
+      row.is_blitz,
     ]
   );
   return getGameById(result.insertId);
@@ -110,12 +113,12 @@ export async function getGameByCode(code) {
   return rows[0] ? fromRow(rows[0]) : undefined;
 }
 
-export async function findWaitingRandomGame(excludeUserId) {
+export async function findWaitingRandomGame(excludeUserId, isBlitz) {
   const [rows] = await pool.query(
     `${SELECT_WITH_PLAYERS}
-     WHERE g.status = 'waiting' AND g.match_type = 'random' AND g.player1_id != ?
+     WHERE g.status = 'waiting' AND g.match_type = 'random' AND g.player1_id != ? AND g.is_blitz = ?
      ORDER BY g.created_at ASC LIMIT 1`,
-    [excludeUserId]
+    [excludeUserId, isBlitz ? 1 : 0]
   );
   return rows[0] ? fromRow(rows[0]) : undefined;
 }

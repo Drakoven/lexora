@@ -145,3 +145,6 @@ CREATE TABLE daily_challenge_attempts (
   UNIQUE KEY unique_user_date (user_id, challenge_date),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+ALTER TABLE games
+  ADD COLUMN is_blitz TINYINT(1) NOT NULL DEFAULT 0;
